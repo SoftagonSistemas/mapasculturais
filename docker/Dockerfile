@@ -21,18 +21,31 @@ WORKDIR /var/www
 COPY docker/common/config.d /var/www/config/common.d
 COPY docker/production/config.d /var/www/config/config.d
 
-# Ajustes de permissão
-RUN sed -i '/exec/i chown www-data:www-data /var/www/html -R' /entrypoint.sh
-
 # Copiando logo
 COPY img/logo-mapas.png /var/www/src/themes/BaseV2/assets/img/logo-mapas.png
 
 # Instalando smtp-relay
-COPY docker/custom/entrypoint-custom.sh /tmp/
-RUN chmod +x /tmp/entrypoint-custom.sh && \
-    sed -i '/exec/i /tmp/entrypoint-custom.sh' /entrypoint.sh && \
-    apt update && \
+RUN apt update && \
     echo "postfix postfix/mailname string localdomain" | debconf-set-selections && \
     echo "postfix postfix/main_mailer_type string 'Internet Site'" | debconf-set-selections && \
     apt-get install postfix mailutils libsasl2-2 ca-certificates libsasl2-modules -y && \
     sed -i 's/    y    /    n    /g' /etc/postfix/master.cf
+
+# Instalando redis
+ENV REDIS_VERSION=6.2.14
+RUN curl -L'#' http://download.redis.io/releases/redis-${REDIS_VERSION}.tar.gz | tar -xz -C /usr/src/ &&\
+    cd /usr/src/redis-${REDIS_VERSION}/ &&\
+    make install &&\
+    rm -rf /usr/src/redis-${REDIS_VERSION}
+
+# Install nginx
+RUN apt update &&\
+    apt install nginx -y
+COPY docker/custom/nginx.conf /etc/nginx/nginx.conf
+COPY docker/production/nginx.conf /etc/nginx/conf.d/default.conf
+
+# Ajustes de permissão e add entrypoint-custom.sh
+COPY docker/custom/entrypoint-custom.sh /tmp/
+RUN sed -i '/^set/a chown www-data:www-data /var/www/html -R' /entrypoint.sh &&\
+    sed -i '/^set/a /tmp/entrypoint-custom.sh' /entrypoint.sh &&\
+    chmod +x /tmp/entrypoint-custom.sh
