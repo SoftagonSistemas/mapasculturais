@@ -20,7 +20,7 @@ services:
     depends_on:
       - db
   db:
-    imagem: softagon/mapasculturais-db:latest
+    image: softagon/mapasculturais-db:latest
     restart: unless-stopped
     environment:
       - POSTGRES_PASSWORD=mapas
