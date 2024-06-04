@@ -2,6 +2,8 @@ services:
   mapasculturais:
     image: softagon/mapasculturais:latest
     restart: unless-stopped
+    env_file:
+      - .env
     volumes:
       - ./.env:/.env
       - ./docker-data/assets:/var/www/html/assets
@@ -10,12 +12,8 @@ services:
       - ./docker-data/saas-files:/var/www/var/saas-files
       - ./docker-data/sessions:/var/www/var/sessions
       - ./docker-data/logs:/var/www/var/logs
-      - ./docker/production/config.d:/var/www/config/prod.d
     links:
       - db
-    environment:
-      - REDIS_CACHE=localhost
-      - SESSIONS_SAVE_PATH=tcp://localhost:6380
     ports:
      - 80:80
      - 443:443

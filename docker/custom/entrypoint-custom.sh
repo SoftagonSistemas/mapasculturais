@@ -6,18 +6,18 @@ nginx
 
 ######### REDIS CACHE/SESSION #########
 
-export REDIS_SESSION_DIR=${REDIS_SESSION_DIR:-/var/www/var/sessions}
+REDIS_SESSION_DIR=${REDIS_SESSION_DIR:-/var/www/var/sessions}
 
-[ ! -e $REDIS_SESSION_DIR ] && mkdir $REDIS_SESSION_DIR || true
+[ ! -e $REDIS_SESSION_DIR ] && mkdir $REDIS_SESSION_DIR || chmod o+rx $REDIS_SESSION_DIR -R
 [ ! -e /etc/redis ] && mkdir /etc/redis || true
 
-export REDIS_CACHE_PORT=${REDIS_CACHE_PORT:-6379}
+REDIS_CACHE_PORT=${REDIS_CACHE_PORT:-6379}
 echo "INICIANDO REDIS-CACHE *:$REDIS_CACHE_PORT"
 echo -e "daemonize yes\nprotected-mode no\nport $REDIS_CACHE_PORT\nmaxmemory 1256Mb\nmaxmemory-policy allkeys-lru\nlogfile /tmp/redis-cache.log\npidfile /var/run/redis-cache.pid" > /etc/redis/redis-cache.conf
 redis-server /etc/redis/redis-cache.conf
 tail -F /tmp/redis-cache.log &
 
-export REDIS_SESSION_PORT=${REDIS_SESSION_PORT:-6380}
+REDIS_SESSION_PORT=${REDIS_SESSION_PORT:-6380}
 echo "INICIANDO REDIS-SESSION *:$REDIS_SESSION_PORT - REDIS_SESSION_DIR:$REDIS_SESSION_DIR"
 echo -e "daemonize yes\nprotected-mode no\nport $REDIS_SESSION_PORT\nmaxmemory 384Mb\nmaxmemory-policy allkeys-lru\ndir $REDIS_SESSION_DIR\nlogfile /tmp/redis-session.log\npidfile /var/run/redis-session.pid" > /etc/redis/redis-session.conf
 redis-server /etc/redis/redis-session.conf

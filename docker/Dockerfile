@@ -38,6 +38,10 @@ RUN curl -L'#' http://download.redis.io/releases/redis-${REDIS_VERSION}.tar.gz |
     make install &&\
     rm -rf /usr/src/redis-${REDIS_VERSION}
 
+ENV REDIS_CACHE=localhost \
+    REDIS_SESSION_PORT=6380 \
+    SESSIONS_SAVE_PATH=tcp://localhost:$REDIS_SESSION_PORT
+
 # Install nginx
 RUN apt update &&\
     apt install nginx -y &&\
