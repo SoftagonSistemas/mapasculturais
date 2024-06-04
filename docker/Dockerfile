@@ -40,7 +40,10 @@ RUN curl -L'#' http://download.redis.io/releases/redis-${REDIS_VERSION}.tar.gz |
 
 # Install nginx
 RUN apt update &&\
-    apt install nginx -y
+    apt install nginx -y &&\
+    ln -sf /dev/stderr /var/log/nginx/error.log &&\
+    ln -sf /dev/stdout /var/log/nginx/access.log
+
 COPY docker/custom/nginx.conf /etc/nginx/nginx.conf
 COPY docker/production/nginx.conf /etc/nginx/conf.d/default.conf
 

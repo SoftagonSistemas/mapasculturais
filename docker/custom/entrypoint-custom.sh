@@ -1,5 +1,9 @@
 #!/bin/bash
 
+######### NGINX ########
+echo "INICIANDO NGINX"
+nginx
+
 ######### REDIS CACHE/SESSION #########
 
 export REDIS_SESSION_DIR=${REDIS_SESSION_DIR:-/var/www/var/sessions}
