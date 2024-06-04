@@ -13,6 +13,8 @@ Para construir a imagem Docker, execute o seguinte comando no diretório raiz do
 
 ```bash
 docker build --no-cache -t mapacultural:latest -f docker/Dockerfile .
+
+docker build -t softagon/mapasculturais-db:latest -f docker/Dockerfile-db .
 ```
 
 ou
