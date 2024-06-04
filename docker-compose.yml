@@ -20,14 +20,13 @@ services:
     depends_on:
       - db
   db:
-    image: postgis/postgis:14-master
+    imagem: softagon/mapasculturais-db:latest
     restart: unless-stopped
     environment:
       - POSTGRES_PASSWORD=mapas
       - POSTGRES_USER=mapas
       - POSTGRES_DB=mapas
     volumes:
-      - ./docker/db:/docker-entrypoint-initdb.d
       - ./docker-data/db-data:/var/lib/postgresql/data
 
 ## Em ambiente de homologação pode ser uma boa ideia utilizar o mailhog para testar 

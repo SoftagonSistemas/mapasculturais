@@ -1,0 +1,2 @@
+FROM postgis/postgis:14-master
+COPY docker/db /docker-entrypoint-initdb.d
