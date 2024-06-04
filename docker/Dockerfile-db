@@ -1,2 +1,3 @@
 FROM postgis/postgis:14-master
+RUN rm -rf /docker-entrypoint-initdb.d/*
 COPY docker/db /docker-entrypoint-initdb.d
