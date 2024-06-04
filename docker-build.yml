@@ -30,6 +30,7 @@ services:
     build:
       context: ./
       dockerfile: docker/Dockerfile
+    image: softagon/mapasculturais:latest
     restart: unless-stopped
     volumes:
       - ./.env:/.env
