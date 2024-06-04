@@ -15,6 +15,12 @@ Para construir a imagem Docker, execute o seguinte comando no diretório raiz do
 docker build -t softagon/mapacultural:latest -f docker/Dockerfile .
 ```
 
+ou
+
+```bash
+docker-compose -f docker-build.yml build
+```
+
 ### Configurando o sistema
 Antes de subir o ambiente é preciso configurá-lo. Para isso crie no servidor um arquivo `.env ` baseado no `.env_sample` e preencha-o corretamente.
 
