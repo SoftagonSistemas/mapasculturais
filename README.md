@@ -12,7 +12,7 @@ https://hub.docker.com/r/softagon/mapasculturais
 Para construir a imagem Docker, execute o seguinte comando no diretório raiz do projeto:
 
 ```bash
-docker build -t softagon/mapacultural:latest -f docker/Dockerfile .
+docker build --no-cache -t mapacultural:latest -f docker/Dockerfile .
 ```
 
 ou

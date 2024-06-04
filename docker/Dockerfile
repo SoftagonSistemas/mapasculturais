@@ -42,7 +42,7 @@ ENV REDIS_CACHE=localhost \
     REDIS_SESSION_PORT=6380 \
     SESSIONS_SAVE_PATH=tcp://localhost:$REDIS_SESSION_PORT
 
-# Install nginx
+# Instalando nginx
 RUN apt update &&\
     apt install nginx -y &&\
     ln -sf /dev/stderr /var/log/nginx/error.log &&\
@@ -52,7 +52,7 @@ COPY docker/custom/nginx.conf /etc/nginx/nginx.conf
 COPY docker/production/nginx.conf /etc/nginx/conf.d/default.conf
 
 # Ajustes de permissão e add entrypoint-custom.sh
-COPY docker/custom/entrypoint-custom.sh /tmp/
+COPY docker/custom/entrypoint-custom.sh /tmp/entrypoint-custom.sh
 RUN sed -i '/^set/a chown www-data:www-data /var/www/html -R' /entrypoint.sh &&\
     sed -i '/^set/a /tmp/entrypoint-custom.sh' /entrypoint.sh &&\
     chmod +x /tmp/entrypoint-custom.sh
