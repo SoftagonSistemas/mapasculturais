@@ -5,7 +5,7 @@
  */
 use MapasCulturais\i;
 ?>
-<div class="home-developers"> 
+<div class="home-developers" v-if="false"> 
     <div class="home-developers__content">
         <span class="dev-icon"><mc-icon name="code"></mc-icon></span>
         <label class="home-developers__content--title"><?= $this->text('title',i::__('Alô desenvolvedores')) ?></label>

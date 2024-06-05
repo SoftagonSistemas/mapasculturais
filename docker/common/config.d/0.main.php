@@ -10,6 +10,6 @@ return [
     // Ids dos selos verificadores. Para utilizar múltiplos selos informe os ids separados por vírgula.
     'app.verifiedSealsIds' => '1', 
 
-    'footer.supportMessage' => 'Precisa de ajuda? Clique para falar com nossa equipe de suporte por chat. Ou envie um email para suporte@meumapa.gov.br',
+    'footer.supportMessage' => 'Precisa de ajuda? Clique para falar com nossa equipe de suporte por chat. Ou envie um email para desenvolvimento@jaboatao.pe.gov.br',
 
 ];
