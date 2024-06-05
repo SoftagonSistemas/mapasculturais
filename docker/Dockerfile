@@ -1,4 +1,4 @@
-FROM hacklab/mapasculturais:7.3.55
+FROM hacklab/mapasculturais:7.3.58
 
 # Copiando temas e plugins
 COPY themes /var/www/src/themes
@@ -33,9 +33,10 @@ RUN apt update && \
 
 # Instalando redis
 ENV REDIS_VERSION=6.2.14
-RUN curl -L'#' http://download.redis.io/releases/redis-${REDIS_VERSION}.tar.gz | tar -xz -C /usr/src/ &&\
-    cd /usr/src/redis-${REDIS_VERSION}/ &&\
-    make install &&\
+COPY docker/custom/redis-${REDIS_VERSION}.tar.gz /tmp/
+RUN tar -xz -C /usr/src/ -f /tmp/redis-${REDIS_VERSION}.tar.gz && \
+    cd /usr/src/redis-${REDIS_VERSION}/ && \
+    make install && \
     rm -rf /usr/src/redis-${REDIS_VERSION}
 
 ENV REDIS_CACHE=localhost \
@@ -43,8 +44,7 @@ ENV REDIS_CACHE=localhost \
     SESSIONS_SAVE_PATH=tcp://localhost:$REDIS_SESSION_PORT
 
 # Instalando nginx
-RUN apt update &&\
-    apt install nginx -y &&\
+RUN apt install nginx -y &&\
     ln -sf /dev/stderr /var/log/nginx/error.log &&\
     ln -sf /dev/stdout /var/log/nginx/access.log
 

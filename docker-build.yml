@@ -4,9 +4,9 @@ services:
     build:
       context: ./
       dockerfile: docker/Dockerfile
-    image: softagon/mapasculturais:latest
+    image: softagon/mapasculturais:dev
   db:
     build:
       context: ./
       dockerfile: docker/Dockerfile-db
-    image: softagon/mapasculturais-db:latest
+    image: softagon/mapasculturais-db:dev
