@@ -31,13 +31,14 @@ jobs:
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
       - name: Build and push Docker image 1 (mapasculturais)
-        uses: docker/build-push-action@v3
-        with:
-          context: ./docker
-          file: ./docker/Dockerfile
-          push: true
-          tags: |
-            softagon/mapasculturais:${{ env.branch_name }}
+        run: |
+          docker build --no-cache -t softagon/mapasculturais:${{ env.branch_name }} -f docker/Dockerfile .
+          docker push softagon/mapasculturais:${{ env.branch_name }}
+
+      - name: Build and push Docker image 2 (mapasculturais-db)
+        run: |
+          docker build --no-cache -t softagon/mapasculturais-db:${{ env.branch_name }} -f docker/Dockerfile-db .
+          docker push softagon/mapasculturais-db:${{ env.branch_name }}
 
       - name: Get commit message
         id: get_commit_message
