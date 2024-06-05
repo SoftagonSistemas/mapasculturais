@@ -28,7 +28,7 @@ COPY img/logo-mapas.png /var/www/src/themes/BaseV2/assets/img/logo-mapas.png
 RUN apt update && \
     echo "postfix postfix/mailname string localdomain" | debconf-set-selections && \
     echo "postfix postfix/main_mailer_type string 'Internet Site'" | debconf-set-selections && \
-    apt-get install postfix mailutils libsasl2-2 ca-certificates libsasl2-modules -y && \
+    apt-get install postfix mailutils libsasl2-2 ca-certificates libsasl2-modules wget git neovim -y && \ 
     sed -i 's/    y    /    n    /g' /etc/postfix/master.cf
 
 # Instalando redis
