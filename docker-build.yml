@@ -1,12 +1,44 @@
- 
 services:
   mapasculturais:
     build:
-      context: ./
+      context: .
       dockerfile: docker/Dockerfile
-    image: softagon/mapasculturais:dev
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./.env:/.env
+      - ./docker-data/assets:/var/www/html/assets
+      - ./docker-data/public-files:/var/www/html/files
+      - ./docker-data/private-files:/var/www/var/private-files
+      - ./docker-data/saas-files:/var/www/var/saas-files
+      - ./docker-data/sessions:/var/www/var/sessions
+      - ./docker-data/logs:/var/www/var/logs
+    links:
+      - db
+    ports:
+     - 8080:80
+     - 443:443
+    depends_on:
+      - db
   db:
-    build:
-      context: ./
-      dockerfile: docker/Dockerfile-db
-    image: softagon/mapasculturais-db:dev
+    image: softagon/mapasculturais-db:latest
+    restart: unless-stopped
+    environment:
+      - POSTGRES_PASSWORD=mapas
+      - POSTGRES_USER=mapas
+      - POSTGRES_DB=mapas
+    volumes:
+      - ./docker-data/db-data:/var/lib/postgresql/data
+
+    ports:
+     - 5433:5432
+## Em ambiente de homologação pode ser uma boa ideia utilizar o mailhog para testar 
+## o envio de emails e também prevenir que emails de tete sejam disparados acidentalmente 
+## para os usuários no caso de o ambiente de homologação utilizar um banco de dados cópia
+## de produção
+
+#  smtp: 
+#    image: mailhog/mailhog
+#    ports:
+#      - "8025:8025"

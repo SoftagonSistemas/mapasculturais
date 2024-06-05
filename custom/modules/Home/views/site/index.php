@@ -5,7 +5,6 @@
  */
 
 $this->import('
-    home-developers 
     home-entities 
     home-feature
     home-header 
@@ -20,4 +19,3 @@ $this->import('
 <home-feature></home-feature>
 <home-register></home-register>
 <home-map></home-map>
-<home-developers></home-developers>

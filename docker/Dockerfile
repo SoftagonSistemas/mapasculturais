@@ -51,6 +51,12 @@ RUN apt install nginx -y &&\
 COPY docker/custom/nginx.conf /etc/nginx/nginx.conf
 COPY docker/production/nginx.conf /etc/nginx/conf.d/default.conf
 
+# Copiando arquivos personalizados para módulos
+COPY custom/modules/Components/components/main-footer/template.php /var/www/src/modules/Components/components/main-footer/template.php
+COPY custom/modules/Home/views/site/index.php /var/www/src/modules/Home/views/site/index.php
+COPY custom/modules/Home/components/home-header/template.php /var/www/src/modules/Home/components/home-header/template.php
+
+
 # Ajustes de permissão e add entrypoint-custom.sh
 COPY docker/custom/entrypoint-custom.sh /tmp/entrypoint-custom.sh
 RUN sed -i '/^set/a chown www-data:www-data /var/www/html -R' /entrypoint.sh &&\

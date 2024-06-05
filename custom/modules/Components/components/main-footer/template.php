@@ -117,14 +117,13 @@ $config = $app->config['social-media'];
         <?php $this->applyTemplateHook("main-footer-reg", "begin")?>
         <div class="main-footer__reg-content">
             <p>
-                <?php i::_e("O Mapas Culturais foi instalado pela plataforma governo.app ") ?> 
-                <?php i::_e("e desenvolvida por "); ?><strong>hacklab<span style="color: red">/</span></strong>
+                plataforma da comunidade
+                <strong><a href="https://github.com/mapasculturais/mapasculturais/releases/tag/v7.3.58" target="_blank"> mapas culturais</a> </strong> 
+               instalado <strong><a href="https://governo.app">por governo.app</a> </strong>
             </p>
 
-            <a class="link" href="https://desenvolvimento.jaboatao.pe.gov.br/contato-secretarias-executivas/">
-                <?php i::_e("Visite Jaboatão dos Guararapes") ?>
-                <mc-icon name="city"></mc-icon>
-            </a>
+            <a class="link" href="https://desenvolvimento.jaboatao.pe.gov.br/">
+                Jaboatão dos Guararapes
             </a>
         </div>
         <?php $this->applyTemplateHook("main-footer-reg", "end")?>
