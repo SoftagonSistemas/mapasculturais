@@ -19,8 +19,8 @@ return [
     //             'scope' => env('AUTH_LINKEDIN_SCOPE', 'r_emailaddress')
     //         ],
              'Google' => [
-                 'client_id' => env('AUTH_GOOGLE_CLIENT_ID', '951113505907-6gf4l0cpp3uil51aue03fhanol116vni.apps.googleusercontent.com'),
-                 'client_secret' => env('AUTH_GOOGLE_CLIENT_SECRET', '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'),
+                 'client_id' => env('AUTH_GOOGLE_CLIENT_ID', null),
+                 'client_secret' => env('AUTH_GOOGLE_CLIENT_SECRET', null),
                  'redirect_uri' => '/autenticacao/google/oauth2callback',
                  'scope' => env('AUTH_GOOGLE_SCOPE', 'email'),
              ],
