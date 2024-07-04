@@ -23,6 +23,7 @@ COPY docker/production/config.d /var/www/config/config.d
 
 # Copiando logo
 COPY img/logo-mapas.png /var/www/src/themes/BaseV2/assets/img/logo-mapas.png
+COPY img/home /var/www/src/themes/BaseV2/assets/img
 
 # Instalando smtp-relay
 RUN apt update && \
@@ -55,6 +56,7 @@ COPY docker/production/nginx.conf /etc/nginx/conf.d/default.conf
 COPY custom/modules/Components/components/main-footer/template.php /var/www/src/modules/Components/components/main-footer/template.php
 COPY custom/modules/Home/views/site/index.php /var/www/src/modules/Home/views/site/index.php
 COPY custom/modules/Home/components/home-header/template.php /var/www/src/modules/Home/components/home-header/template.php
+COPY config/home-header.php /var/www/config/home-header.php
 
 
 # Ajustes de permissão e add entrypoint-custom.sh
