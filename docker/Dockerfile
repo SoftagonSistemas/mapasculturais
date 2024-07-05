@@ -5,10 +5,7 @@ COPY themes /var/www/src/themes
 COPY plugins /var/www/src/plugins
 
 # Instalando plugin MultipleLocalAuth
-ENV PLUGIN_MLA_VERSION=3.0.0
-RUN curl -L https://github.com/mapasculturais/plugin-MultipleLocalAuth/archive/refs/tags/v${PLUGIN_MLA_VERSION}.tar.gz | tar -xz -C /var/www/src/plugins/ && \
-    mv /var/www/src/plugins/plugin-MultipleLocalAuth-${PLUGIN_MLA_VERSION}/* /var/www/src/plugins/MultipleLocalAuth/ && \
-    rm -rf /var/www/src/plugins/plugin-MultipleLocalAuth-${PLUGIN_MLA_VERSION}
+COPY plugins/plugin-MultipleLocalAuth-3.0.0 /var/www/src/plugins/MultipleLocalAuth
 
 # Instalando dependências e construindo projeto
 WORKDIR /var/www/src
@@ -24,6 +21,9 @@ COPY docker/production/config.d /var/www/config/config.d
 # Copiando logo
 COPY img/logo-mapas.png /var/www/src/themes/BaseV2/assets/img/logo-mapas.png
 COPY img/home /var/www/src/themes/BaseV2/assets/img
+
+# Confirmação do Google Search Console
+COPY seo/ /var/www/public
 
 # Instalando smtp-relay
 RUN apt update && \
