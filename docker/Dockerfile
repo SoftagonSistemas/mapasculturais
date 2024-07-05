@@ -56,10 +56,13 @@ COPY docker/production/nginx.conf /etc/nginx/conf.d/default.conf
 COPY custom/modules/Components/components/main-footer/template.php /var/www/src/modules/Components/components/main-footer/template.php
 COPY custom/modules/Home/views/site/index.php /var/www/src/modules/Home/views/site/index.php
 COPY custom/modules/Home/components/home-header/template.php /var/www/src/modules/Home/components/home-header/template.php
+COPY custom/modules/Search/components/search-map/texts.php /var/www/src/modules/Search/components/search-map/texts.php
+COPY custom/modules/Home/components/home-entities/template.php /var/www/src/modules/Home/components/home-entities/template.php
 COPY config/home-header.php /var/www/config/home-header.php
 COPY config/module.home.php /var/www/config/module.home.php
 COPY config/lgpd.php /var/www/config/lgpd.php
 COPY config/lgpd-terms /var/www/config/lgpd-terms
+
 
 # Ajustes de permissão e add entrypoint-custom.sh
 COPY docker/custom/entrypoint-custom.sh /tmp/entrypoint-custom.sh

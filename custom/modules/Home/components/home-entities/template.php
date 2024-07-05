@@ -65,7 +65,7 @@ $this->import('
                     </div>
                 </div>
                 <div class="card__right">
-                    <p><?= $this->text('events', i::__('Você pode pesquisar eventos culturais nos campos de busca combinada. Como usuário cadastrado, você pode incluir seus eventos na plataforma e divulgá-los gratuitamente. (Mais uma linha aqui pra fechar cinco linhas)')) ?></p>
+                    <p>Explore eventos culturais com nossa busca avançada. Como usuário cadastrado, adicione e divulgue seus próprios eventos gratuitamente na plataforma, aproveitando uma ampla visibilidade e alcance para suas atividades culturais.</p>
                     <mc-link route="search/events" class="button button--icon button--sm event__color">
                         <?= i::__('Ver todos')?>
                         <mc-icon name="access"></mc-icon>

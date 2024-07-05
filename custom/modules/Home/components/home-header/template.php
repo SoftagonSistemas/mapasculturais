@@ -19,7 +19,7 @@ $this->import('
                 <?= $this->text('title', i::__('Bem-vindo ao Mapa Cultural de Jaboatão dos Guararapes!')) ?>
             </label>
             <p class="home-header__description">
-                <?= $this->text('description', i::__('Seja bem-vindo ao Mapa Cultural de Jaboatão dos Guararapes! Conecte-se, divulgue suas iniciativas e participe da promoção da nossa rica diversidade cultural. Vamos celebrar juntos! ')) ?>
+                <?= $this->text('description', i::__('Conecte-se, divulgue suas iniciativas e participe da promoção da nossa rica diversidade cultural. Vamos celebrar juntos! ')) ?>
             </p>
         </div>
 
