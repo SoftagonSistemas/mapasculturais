@@ -19,8 +19,8 @@ COPY docker/common/config.d /var/www/config/common.d
 COPY docker/production/config.d /var/www/config/config.d
 
 # Copiando logo
-COPY img/logo-mapas.png /var/www/src/themes/BaseV2/assets/img/logo-mapas.png
 COPY img/home /var/www/src/themes/BaseV2/assets/img
+COPY img/ /var/www/src/themes/BaseV2/assets/img/
 
 # Confirmação do Google Search Console
 COPY seo/ /var/www/public
@@ -40,10 +40,12 @@ RUN tar -xz -C /usr/src/ -f /tmp/redis-${REDIS_VERSION}.tar.gz && \
     make install && \
     rm -rf /usr/src/redis-${REDIS_VERSION}
 
-ENV REDIS_CACHE=localhost \
-    REDIS_SESSION_PORT=6380 \
-    SESSIONS_SAVE_PATH=tcp://localhost:$REDIS_SESSION_PORT
+# Definindo variáveis de ambiente separadamente
+ENV REDIS_CACHE=localhost
+ENV REDIS_SESSION_PORT=6380
+ENV SESSIONS_SAVE_PATH=tcp://localhost:${REDIS_SESSION_PORT}
 
+ 
 # Instalando nginx
 RUN apt install nginx -y &&\
     ln -sf /dev/stderr /var/log/nginx/error.log &&\
