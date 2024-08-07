@@ -1,22 +1,7 @@
 captainVersion: 4
 services:
-    $$cap_appname-mapa-nginx:
-        image: nginx:latest
-        restart: unless-stopped
-        volumes:
-            - $$cap_appname-mapa-index:/var/www/html/index.php
-            - $$cap_appname-mapa-public-files:/var/www/html/files
-            - $$cap_appname-mapa-assets:/var/www/html/assets
-        ports:
-            - 80:80
-            - 443:443
-        depends_on:
-            - $$cap_appname-mapa-mapasculturais
-        caproverExtra:
-            containerHttpPort: 80
-
     $$cap_appname-mapa-mapasculturais:
-        image: softagon/mapasculturais:latest
+        image: softagon/mapasculturais:$$cap_mapasculturais_tag
         restart: unless-stopped
         volumes:
             - $$cap_appname-mapa-assets:/var/www/html/assets
@@ -26,7 +11,6 @@ services:
             - $$cap_appname-mapa-sessions:/var/www/var/sessions
             - $$cap_appname-mapa-logs:/var/www/var/logs
         environment:
-            BASE_URL: https://$$cap_appname.$$cap_root_domain
             APP_MODE: $$cap_app_mode
             LOG_LEVEL: $$cap_log_level
             LOG_ENABLED: $$cap_log_enabled
@@ -54,27 +38,9 @@ services:
             AUTH_GOOGLE_CLIENT_SECRET: $$cap_google_client_secret
         depends_on:
             - $$cap_appname-mapa-db
-            - $$cap_appname-mapa-redis
-            - $$cap_appname-mapa-sessions
-
-    $$cap_appname-mapa-redis:
-        image: redis:6
-        command: --maxmemory 1256Mb --maxmemory-policy allkeys-lru
-        restart: unless-stopped
-        caproverExtra:
-            notExposeAsWebApp: 'true'
-
-    $$cap_appname-mapa-sessions:
-        image: redis:6
-        command: --maxmemory 384Mb --maxmemory-policy allkeys-lru
-        restart: unless-stopped
-        volumes:
-            - $$cap_appname-mapa-sessions:/data
-        caproverExtra:
-            notExposeAsWebApp: 'true'
 
     $$cap_appname-mapa-db:
-        image: postgis/postgis:16-master
+        image: softagon/mapasculturais-db:latest
         restart: unless-stopped
         environment:
             POSTGRES_PASSWORD: $$cap_postgres_password
@@ -87,6 +53,12 @@ services:
 
 caproverOneClickApp:
     variables:
+        - description: Versão do MAPA em https://hub.docker.com/r/softagon/mapasculturais
+          defaultValue: prefeitura-
+          id: $$cap_mapasculturais_tag
+          label: Tag docker da versão
+          validRegex: /.{1,}/
+
         - id: $$cap_postgres_password
           label: PostgreSQL Password
           defaultValue: $$cap_gen_random_hex(16)
