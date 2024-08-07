@@ -3355,7 +3355,7 @@ $data = [
             "Itapetim",
             "Itapissuma",
             "Itaquitinga",
-            "Jaboatão dos Guararapes",
+            "Triunfo",
             "Jaqueira",
             "Jataúba",
             "Jatobá",

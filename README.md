@@ -7,6 +7,14 @@ Mapas Culturais é uma plataforma colaborativa que reúne informações sobre ag
 
 ## Comandos Docker
 https://hub.docker.com/r/softagon/mapasculturais 
+
+## Publicando no docker hub
+Esse script automatiza o processo de build e push, tornando mais fácil manter imagens Docker atualizadas no Docker Hub
+
+```bash
+./publish_docker.sh
+```
+
 ### Construção da Imagem Docker
 
 Para construir a imagem Docker, execute o seguinte comando no diretório raiz do projeto:

@@ -1,4 +1,5 @@
-<?php 
+<?php
+
 use \MapasCulturais\i;
 
 return [
@@ -6,7 +7,7 @@ return [
     Define o nome do asset da imagem do background e banner no header da home - Substituirá o background padrão
     ex: `img/meu-home-header-background.jpg` (pasta assets/img/meu-home-header-background.jpg do tema)
     */
-    'homeHeader.background' => env('HOME_HEADER_BACKGROUND', 'img/home.jpg'),
+    'homeHeader.background' => env('HOME_HEADER_BACKGROUND', 'img/home.png'),
 
     /* 
     Define o nome do asset do banner do header da homepage 
@@ -16,15 +17,15 @@ return [
 
     /* Link vinculado ao primeiro banner */
     'homeHeader.bannerLink' => env('HOME_HEADER_LINK', ''),
-    
+
     /* Define se link é para download ou para abrir em uma nova aba */
     'homeHeader.downloadableLink' => env('HOME_HEADER_DOWNLOADABLE', false),
 
     'homeHeader.secondBanner' => env('HOME_HEADER_BANNER', ''),
-    
+
     /* Link vinculado ao segundo banner */
     'homeHeader.secondBannerLink' => env('HOME_HEADER_LINK', ''),
-       
+
     /* Define se link é para download ou para abrir em uma nova aba */
     'homeHeader.secondDownloadableLink' => env('HOME_HEADER_SECOND_DOWNLOADABLE', false),
 
