@@ -1,10 +1,11 @@
 <?php
+
 use MapasCulturais\i;
 
 return [
     'mailer.templates' => [
         'welcome' => [
-            'title' => i::__("Bem-vindo(a) ao Mapas Culturais"),
+            'title' => i::__("Bem-vindo ao Mapa Cultural e Turístico de Triunfo!"),
             'template' => 'welcome.html'
         ],
         'last_login' => [

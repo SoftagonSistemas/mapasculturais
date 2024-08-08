@@ -17,7 +17,7 @@ $this->import('
 
         <div class="home-header__main">
             <label class="home-header__title">
-                <?= $this->text('title', i::__('Bem-vindo ao Mapa Cultural de Triunfo!')) ?>
+                <?= $this->text('title', i::__('Bem-vindo ao Mapa Cultural e Turístico de Triunfo!')) ?>
             </label>
             <p class="home-header__description">
                 <?= $this->text('description', i::__('Conecte-se, divulgue suas iniciativas e participe da promoção da nossa rica diversidade cultural. Vamos celebrar juntos! ')) ?>
