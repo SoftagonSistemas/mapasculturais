@@ -22,20 +22,8 @@ $config = $app->config['social-media'];
         </div>
         <div class="main-footer__content--logo">
             <div class="main-footer__content--logo-img">
-                <?php
-                // Obtenha a instância do AssetManager
-                $assetManager = $this->getAssetManager();
-
-                // Obtenha o URL do asset usando o método assetUrl do AssetManager
-                $assetUrl = $assetManager->assetUrl('/img/fundajg.png');
-                ?>
-
-                <!-- Link da imagem para o site com atributos de acessibilidade -->
-                <a href="https://www.fundajg.com.br/" target="_blank" rel="noopener noreferrer" aria-label="Visite o site da Fundação Cultural Guararapes" title="Fundação Cultural Guararapes">
-                    <img src="<?= $assetUrl ?>" alt="Logo da Fundação Cultural Guararapes" width="200" height="80">
-                </a>
+                <theme-logo href="<?= $app->createUrl('site', 'index') ?>"></theme-logo>
             </div>
-
 
             <div class="main-footer__content--logo-share">
                 <?php foreach ($config as $conf) : ?>
@@ -46,8 +34,6 @@ $config = $app->config['social-media'];
             </div>
         </div>
         <?php $this->applyTemplateHook("main-footer-logo", "after") ?>
-
-
 
         <?php $this->applyTemplateHook("main-footer-links", "before") ?>
         <div class="main-footer__content--links">
