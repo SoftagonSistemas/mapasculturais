@@ -1,8 +1,8 @@
 <?php
 
 return [
-    'app.siteName' => 'Mapa Cultural - Triunfo',
-    'app.siteDescription' => 'O Mapa Cultural é uma plataforma colaborativa que reúne informações sobre agentes, espaços, eventos, projetos culturais e oportunidades',
+    'app.siteName' => 'Mapa Cultural e Turístico - Triunfo',
+    'app.siteDescription' => 'O Mapa Cultural e Turístico é uma plataforma colaborativa que reúne informações sobre agentes, espaços, eventos, projetos culturais e oportunidades',
 
     // Define o tema ativo no site principal. Deve ser informado o namespace do tema e neste deve existir uma classe Theme.
     'themes.active' => 'MapasCulturais\Themes\BaseV2',
