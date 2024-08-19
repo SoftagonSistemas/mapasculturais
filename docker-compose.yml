@@ -28,9 +28,15 @@ services:
       - POSTGRES_DB=mapas
     volumes:
       - ./docker-data/db-data:/var/lib/postgresql/data
-
     ports:
      - 5433:5432
+  redis:
+    image: redis:7.4.0-alpine  
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./docker-data/redis:/data
 ## Em ambiente de homologação pode ser uma boa ideia utilizar o mailhog para testar 
 ## o envio de emails e também prevenir que emails de tete sejam disparados acidentalmente 
 ## para os usuários no caso de o ambiente de homologação utilizar um banco de dados cópia

@@ -32,18 +32,10 @@ RUN apt update && \
     apt-get install postfix mailutils libsasl2-2 ca-certificates libsasl2-modules wget git neovim -y && \ 
     sed -i 's/    y    /    n    /g' /etc/postfix/master.cf
 
-# Instalando redis
-ENV REDIS_VERSION=6.2.14
-COPY docker/custom/redis-${REDIS_VERSION}.tar.gz /tmp/
-RUN tar -xz -C /usr/src/ -f /tmp/redis-${REDIS_VERSION}.tar.gz && \
-    cd /usr/src/redis-${REDIS_VERSION}/ && \
-    make install && \
-    rm -rf /usr/src/redis-${REDIS_VERSION}
-
-# Definindo variáveis de ambiente separadamente
-ENV REDIS_CACHE=localhost
-ENV REDIS_SESSION_PORT=6380
-ENV SESSIONS_SAVE_PATH=tcp://localhost:${REDIS_SESSION_PORT}
+# # Definindo variáveis de ambiente separadamente
+# ENV REDIS_CACHE=localhost
+# ENV REDIS_SESSION_PORT=6380
+# ENV SESSIONS_SAVE_PATH=tcp://localhost:${REDIS_SESSION_PORT}
 
  
 # Instalando nginx
@@ -67,6 +59,9 @@ COPY config/home-header.php /var/www/config/home-header.php
 COPY config/module.home.php /var/www/config/module.home.php
 COPY config/lgpd.php /var/www/config/lgpd.php
 COPY config/lgpd-terms /var/www/config/lgpd-terms
+
+ # Copiando o script recriado para o contêiner
+COPY scripts/recreate-pending-pcache.sh /var/www/scripts/recreate-pending-pcache.sh
 
 # Ajustes de permissão e add entrypoint-custom.sh
 COPY docker/custom/entrypoint-custom.sh /tmp/entrypoint-custom.sh
