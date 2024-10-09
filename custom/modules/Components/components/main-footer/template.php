@@ -119,14 +119,15 @@ $config = $app->config['social-media'];
         <?php $this->applyTemplateHook("main-footer-reg", "begin") ?>
         <div class="main-footer__reg-content">
             <p>
-                <?php i::_e("plataforma criadddda pela comunidade") ?>
-                <span class="mapas"> <mc-icon name="map"></mc-icon><?php i::_e("mapas culturais"); ?> </span>
-                <?php i::_e("e desenvolvida por "); ?><strong>hacklab<span style="color: red">/</span></strong>
+                <?php i::_e("plataforma da comunidade") ?>
+                <span class="mapas"> <mc-icon name="map"></mc-icon>
+                    <a class="link" href="https://github.com/mapasculturais/mapasculturais/releases" target="_blank">Mapas Culturais</a>
+                </span>
+                e instalado por <strong><a class="link" href="https://governo.app" target="_blank">governo.app<span style="color: red">/</span></a></strong>
             </p>
 
             <a class="link" href="https://github.com/mapasculturais">
-                <?php i::_e("Conheça o repositório") ?>
-                <mc-icon name="github"></mc-icon>
+                <p><?php echo $app->config['app.siteName']; ?></p>
             </a>
         </div>
         <?php $this->applyTemplateHook("main-footer-reg", "end") ?>

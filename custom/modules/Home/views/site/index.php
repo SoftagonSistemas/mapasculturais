@@ -1,4 +1,5 @@
-<?php 
+<?php
+
 /**
  * @var MapasCulturais\App $app
  * @var MapasCulturais\Themes\BaseV2\Theme $this
@@ -20,4 +21,3 @@ $this->import('
 <home-feature></home-feature>
 <home-register></home-register>
 <home-map></home-map>
-<home-developers></home-developers>

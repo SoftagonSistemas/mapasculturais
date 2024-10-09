@@ -1,4 +1,5 @@
-<?php 
+<?php
+
 use \MapasCulturais\i;
 // $_ENV['APP_MODE'] = 'development';
 
@@ -10,7 +11,7 @@ return [
     */
     'themes.active' => env('ACTIVE_THEME', 'MapasCulturais\Themes\BaseV2'),
 
-    
+
     /*
     Define a url do site
 
@@ -20,13 +21,14 @@ return [
 
     /* Nome do site. É utilizado para a formação dos títulos das páginas. */
     'app.siteName' => env('SITE_NAME', i::__('Mapas Culturais')),
+    'app.siteWellcome' => env('SITE_WELLCOME', 'Mapa Cultural da Cidade'),
 
     /* Breve descrição do site. É utilizado como texto de compartilhamento da página principal do site. */
     'app.siteDescription' => env('SITE_DESCRIPTION', i::__('O Mapas Culturais é uma plataforma livre para mapeamento cultural.')),
-    
+
     /* Ids dos selos verificadores. Para utilizar múltiplos selos informe os ids separados por vírgula. */
     'app.verifiedSealsIds' => explode(',', env('VERIFIED_SEALS', '1')),
-    
+
     /* 
     Define a linguagem a ser utilizada. 
     É possível definir mais de um valor e desta forma a linguagem será escolhida baseado na configuração do navegador do usuário
@@ -41,7 +43,7 @@ return [
     ex: `BR` ou `AR` 
     */
     'app.defaultCountry' => env('APP_DEFAULT_COUNTRY', "BR"),
-    
+
     /* 
     Define o modo em que a aplicação está rodando. 
     Os valores possíveis são as constantes `APPMODE_PRODUCTION`, `APPMODE_STAGING` e `APPMODE_DEVELOPMENT`.
@@ -63,12 +65,12 @@ return [
     Por padrão o valor é verdadeiro quando o app.mode for `APPMODE_DEVELOPMENT`.
     */
     'doctrine.isDev' => env('DOCTRINE_ISDEV', env('APP_MODE', APPMODE_PRODUCTION) == APPMODE_DEVELOPMENT),
-    
+
     /* Valor do header Access-Control-Allow-Origin da api de leitura. */
     'api.accessControlAllowOrigin' => env('API_ACCESS_CONTROL_ALLOW_ORIGIN', '*'),
 
     /** função para sanitizar o nome do arquivo */
-    'app.sanitize_filename_function' => function($filename) {
+    'app.sanitize_filename_function' => function ($filename) {
         return $filename;
     },
 
