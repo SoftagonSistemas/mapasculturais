@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @var \MapasCulturais\Themes\BaseV2\Theme $this
  * @var \MapasCulturais\App $app
@@ -16,7 +17,7 @@ $this->import('
 ');
 ?>
 
-<div class="create-account"> 
+<div class="create-account">
 
     <div v-if="!created" class="create-account__title">
         <label> <?= i::__('Criar uma conta') ?> </label>
@@ -24,8 +25,8 @@ $this->import('
     </div>
 
     <!-- Creating account -->
-    <mc-card v-if="!created" class="no-title">        
-        <template #content> 
+    <mc-card v-if="!created" class="no-title">
+        <template #content>
             <div class="create-account__timeline">
                 <mc-stepper :steps="arraySteps" disable-navigation no-labels></mc-stepper>
             </div>
@@ -40,8 +41,8 @@ $this->import('
                         <input type="text" name="email" id="email" v-model="email" />
                     </div>
                     <div class="field col-12">
-                        <label class="document-label" for="cpf"> 
-                            <?= i::__('CPF') ?> 
+                        <label class="document-label" for="cpf">
+                            <?= i::__('CPF') ?>
                             <div class="question">
                                 <VMenu class="popover">
                                     <button tabindex="-1" class="question" type="button"> <?= i::__('Por que pedimos este dado') ?> <mc-icon name="question"></mc-icon> </button>
@@ -51,7 +52,7 @@ $this->import('
                                 </VMenu>
                             </div>
                         </label>
-                        <input type="text" name="cpf" id="cpf" v-model="cpf" @change="cpfMask" maxlength="14" />
+                        <input type="text" name="cpf" id="cpf" v-model="cpf" @input="applyCpfMask" maxlength="14" />
                     </div>
                     <div class="field col-12 password">
                         <label for="pwd"> <?= i::__('Senha'); ?> </label>
@@ -68,7 +69,7 @@ $this->import('
                         </label>
                         <input autocomplete="off" id="pwd-check" type="password" name="confirm_password" v-model="confirmPassword" />
                         <div class="seePassword" @click="togglePassword('pwd-check', $event)"></div>
-                    </div>                    
+                    </div>
                     <div class="progressbar col-12">
                         <span> <?= i::__('Força da senha'); ?> </span>
                         <progress id="progress" :class="strongnessClass" :value="passwordStrongness" max="100"></progress>
@@ -77,16 +78,16 @@ $this->import('
                     <VueRecaptcha v-if="configs['google-recaptcha-sitekey']" :sitekey="configs['google-recaptcha-sitekey']" @verify="verifyCaptcha" @expired="expiredCaptcha" class="g-recaptcha col-12"></VueRecaptcha>
                     <button class="col-12 button button--primary button--large button--md" type="submit"> <?= i::__('Continuar') ?> </button>
                 </form>
-                
+
                 <div v-if="configs.strategies.Google?.visible || configs.strategies.govbr?.visible" class="divider col-12"></div>
 
                 <div v-if="configs.strategies.Google?.visible || configs.strategies.govbr?.visible" class="social-login col-12">
-                    <a v-if="configs.strategies.govbr?.visible" class="social-login--button button button--icon button--large button--md govbr" href="<?php echo $app->createUrl('auth', 'govbr') ?>">                                
-                        <div class="img"> <img height="16" class="br-sign-in-img" src="<?php $this->asset('img/govbr-white.png'); ?>" /> </div>                                
-                        <?= i::__('Entrar com Gov.br') ?>                            
-                    </a>                    
-                    <a v-if="configs.strategies.Google?.visible" class="social-login--button button button--icon button--large button--md google" href="<?php echo $app->createUrl('auth', 'google') ?>">                                
-                        <div class="img"> <img height="16" src="<?php $this->asset('img/g.png'); ?>" /> </div>                                
+                    <a v-if="configs.strategies.govbr?.visible" class="social-login--button button button--icon button--large button--md govbr" href="<?php echo $app->createUrl('auth', 'govbr') ?>">
+                        <div class="img"> <img height="16" class="br-sign-in-img" src="<?php $this->asset('img/govbr-white.png'); ?>" /> </div>
+                        <?= i::__('Entrar com Gov.br') ?>
+                    </a>
+                    <a v-if="configs.strategies.Google?.visible" class="social-login--button button button--icon button--large button--md google" href="<?php echo $app->createUrl('auth', 'google') ?>">
+                        <div class="img"> <img height="16" src="<?php $this->asset('img/g.png'); ?>" /> </div>
                         <?= i::__('Entrar com Google') ?>
                     </a>
                 </div>
@@ -96,7 +97,7 @@ $this->import('
             <div v-show="step==index+1" v-for="(value, name, index) in terms" class="create-account__step grid-12">
                 <label class="title col-12"> {{value.title}} </label>
                 <div class="term col-12" v-html="value.text" :id="'term'+index" ref="terms"></div>
-                <div class="divider col-12"></div>                
+                <div class="divider col-12"></div>
                 <button class="col-12 button button--primary button--large button--md" :id="'acceptTerm'+index" @click="nextStep(); acceptTerm(name)"> {{value.buttonText}} </button>
                 <button class="col-12 button button--text" @click="cancel()"> <?= i::__('Voltar e excluir minhas informações') ?> </button>
             </div>
@@ -110,10 +111,10 @@ $this->import('
                         <span> <?= i::__('Dê um nome e faça uma breve descrição do seu Agente.') ?> </span>
                     </div>
                 </label>
-                
-                <entity-field :entity="agent" classes="col-12" hide-required label=<?php i::esc_attr_e("Nome")?> prop="name" fieldDescription="<?= i::__('As pessoas irão encontrar você por esse nome.') ?>"></entity-field>
-                <entity-field :entity="agent" classes="col-12" hide-required prop="shortDescription" label="<?php i::esc_attr_e("Descrição")?>"></entity-field>
-                <entity-terms :entity="agent" classes="col-12" :editable="true" taxonomy='area' title="<?php i::esc_attr_e("Área de atuação") ?>"></entity-terms>                
+
+                <entity-field :entity="agent" classes="col-12" hide-required label=<?php i::esc_attr_e("Nome") ?> prop="name" fieldDescription="<?= i::__('As pessoas irão encontrar você por esse nome.') ?>"></entity-field>
+                <entity-field :entity="agent" classes="col-12" hide-required prop="shortDescription" label="<?php i::esc_attr_e("Descrição") ?>"></entity-field>
+                <entity-terms :entity="agent" classes="col-12" :editable="true" taxonomy='area' title="<?php i::esc_attr_e("Área de atuação") ?>"></entity-terms>
 
                 <VueRecaptcha v-if="configs['google-recaptcha-sitekey']" :sitekey="configs['google-recaptcha-sitekey']" @verify="verifyCaptcha" @expired="expiredCaptcha" @render="expiredCaptcha" class="g-recaptcha col-12"></VueRecaptcha>
 
@@ -121,8 +122,8 @@ $this->import('
             </div>
         </template>
     </mc-card>
-    
-    <!-- Account created -->            
+
+    <!-- Account created -->
     <mc-card v-if="created" class="no-title card-created">
         <template #content>
             <div class="create-account__created grid-12">

@@ -320,5 +320,15 @@ app.component('create-account', {
                 document.getElementById(id).type = 'password';
             }
         },
+
+        applyCpfMask() {
+            let cpfClean = this.cpf.replace(/\D/g, ""); // Remove caracteres não numéricos
+            if (cpfClean.length <= 11) {
+                cpfClean = cpfClean.replace(/(\d{3})(\d)/, "$1.$2");
+                cpfClean = cpfClean.replace(/(\d{3})(\d)/, "$1.$2");
+                cpfClean = cpfClean.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+            }
+            this.cpf = cpfClean;
+        },
     },
 });
