@@ -14,6 +14,9 @@ services:
       - ./docker-data/saas-files:/var/www/var/saas-files
       - ./docker-data/sessions:/var/www/var/sessions
       - ./docker-data/logs:/var/www/var/logs
+      # Adicionar o volume específico para o arquivo template.php
+      - ./custom/modules/:/var/www/src/modules/
+  
     links:
       - db
     ports:

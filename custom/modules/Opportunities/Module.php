@@ -11,7 +11,6 @@ use MapasCulturais\Entities\Opportunity;
 use MapasCulturais\Entities\EvaluationMethodConfiguration;
 use MapasCulturais\Entities\Registration;
 use MapasCulturais\Entities\RegistrationEvaluation;
-use PHPUnit\Util\Annotation\Registry;
 
 class Module extends \MapasCulturais\Module{
 
@@ -32,6 +31,139 @@ class Module extends \MapasCulturais\Module{
         $app->registerJobType(new Jobs\FinishEvaluationPhase(Jobs\FinishEvaluationPhase::SLUG));
         $app->registerJobType(new Jobs\FinishDataCollectionPhase(Jobs\FinishDataCollectionPhase::SLUG));
         $app->registerJobType(new Jobs\PublishResult(Jobs\PublishResult::SLUG));
+        $app->registerJobType(new Jobs\UpdateSummaryCaches(Jobs\UpdateSummaryCaches::SLUG));
+
+        // Quando a oportunidade é multifases e ocorre uma alteração na propriedade, essa mudança também se reflete nas fases subsequentes.
+        $app->hook("entity(Opportunity).saveOwnerAgent", function() {
+            /** @var \MapasCulturais\Entities\Opportunity $this */
+            if(!$this->isNew()) {
+                $phases = $this->allPhases;
+                foreach($phases as $phase) {
+                    $phase->owner = $this->owner;
+                    $phase->save(true);
+                }
+            }
+        });
+
+        $app->hook('GET(<<registration>>.<<*>>):before', function() use ($app) {
+            $registration = $this->requestedEntity;
+            $app->hook('entity(Registration).propertiesMetadata', function(&$metadada) use ($registration) {
+                $metadada['category']['field_type'] = 'select';
+                $metadada['proponentType']['field_type'] = 'select';
+                $metadada['range']['field_type'] = 'select';
+
+                $opportunity = $registration->opportunity;
+                if(($categories = $opportunity->registrationCategories) || true) {
+                    $options = [];
+
+                    foreach($categories as $category) {
+                        $options[$category] =  $category;
+                    }
+
+                    $metadada['category']['options'] = $options;
+                    $metadada['category']['optionsOrder'] = $categories;
+                    $metadada['category']['required'] = true;
+                }
+
+                if(($proponentTypes = $opportunity->registrationProponentTypes) || true) {
+                    $options = [];
+
+                    foreach($proponentTypes as $proponentType) {
+                        $options[$proponentType] =  $proponentType;
+                    }
+
+                    $metadada['proponentType']['options'] = $options;
+                    $metadada['proponentType']['optionsOrder'] = $proponentTypes;
+                }
+
+                if($ranges = $opportunity->registrationRanges) {
+                    $options = [];
+                    $_ranges = [];
+                    foreach($ranges as $range) {
+                        $range = (object) $range;
+                        $options[$range->label] =  $range->label;
+                        $_ranges[] = $range->label;
+                    }
+
+                    $metadada['range']['options'] = $options;
+                    $metadada['range']['optionsOrder'] = $_ranges;
+                }
+            });
+        });
+
+        // ajusta validação da área de interesse
+        $app->hook('entity(Opportunity).validationErrors', function(&$errors) use ($app){
+            /** @var Opportunity $this */
+            if(isset($errors['term-area'])) {
+                if($this->parent){
+                    unset($errors['term-area']);
+                } else {
+                    foreach($errors['term-area'] as &$termError) {
+                        if(strpos($termError, i::__('área de atuação')) !== false) {
+                            $termError = str_replace(i::__('área de atuação'), i::__('área de interesse'), $termError);
+                        }
+                    }
+                }
+            }
+        });
+
+        // atualiza o cache dos resumos das fase de avaliação
+        $app->hook("entity(Registration).<<send|insert>>:before", function() use ($app) {
+            /** @var Registration $this */
+            $evaluation_method_configuration = $this->opportunity->evaluationMethodConfiguration ?: null;
+            $cache_key = "updateSummary::{$this->opportunity}::{$evaluation_method_configuration}";
+            if(!$app->mscache->contains($cache_key)) {
+                $app->mscache->save($cache_key, true, 10);
+                $app->enqueueOrReplaceJob(Jobs\UpdateSummaryCaches::SLUG, [
+                    'opportunity' => $this->opportunity,
+                    'evaluationMethodConfiguration' => $evaluation_method_configuration,
+                ], '10 seconds');
+                $app->mscache->delete($cache_key);
+            }
+        });
+
+        $app->hook("entity(Registration).status(<<*>>)", function() use ($app) {
+            $app->log->debug("Registration {$this->id} status changed to {$this->status}");
+            
+            /** @var Registration $this */
+            /** @var Opportunity $opportunity */
+            $opportunity = $this->opportunity;
+            do{
+                $app->enqueueOrReplaceJob(Jobs\UpdateSummaryCaches::SLUG, [
+                    'opportunity' => $opportunity
+                ], '10 seconds');
+
+                $opportunity = $opportunity->nextPhase;
+                
+            } while ($opportunity);
+        });
+        
+        $app->hook("entity(RegistrationEvaluation).save:after", function() use ($app) {
+            /** @var RegistrationEvaluation $this */
+            $cache_key = "updateSummary::{$this->registration->opportunity->evaluationMethodConfiguration}";
+            if(!$app->mscache->contains($cache_key)) {
+                $app->mscache->save($cache_key, true, 10);
+                $app->enqueueOrReplaceJob(Jobs\UpdateSummaryCaches::SLUG, [
+                    'evaluationMethodConfiguration' => $this->registration->opportunity->evaluationMethodConfiguration
+                ], '10 seconds');
+                $app->mscache->delete($cache_key);
+            }
+            
+        });
+
+        // Método para que devolve se existe avaliações técnicas nas fases anteriores
+        $app->hook("Entities\\Opportunity::hasPreviousTechnicalEvaluation", function() use ($app) {
+            $previousPhases = $this->previousPhases;
+
+            $hasPreviousTechnicalEvaluation =  false;
+            foreach($previousPhases as $phase) {
+                if($phase->evaluationMethodConfiguration && $phase->evaluationMethodConfiguration->type->id === "technical") {
+                    $hasPreviousTechnicalEvaluation = true;
+                }
+            }
+
+            return $hasPreviousTechnicalEvaluation;
+        });
 
         $app->hook('entity(Opportunity).validations', function(&$validations) {
             /** @var Opportunity $this */
@@ -307,6 +439,48 @@ class Module extends \MapasCulturais\Module{
             $this->jsObject['config']['evaluationMethods'] = $app->getRegisteredEvaluationMethods();
         });
 
+        // Na edição de campo enviar revisão
+        $app->hook('entity(RegistrationFieldConfiguration).update:after', function() use($app) {
+            /** @var \MapasCulturais\Entities\Opportunity $owner */
+            $owner = $this->owner;
+            $owner->_newModifiedRevision(sprintf(i::__('campo "%s" modificado'), $this->fieldName));
+        });
+
+        // Na criação de campo enviar revisão
+        $app->hook('entity(RegistrationFieldConfiguration).insert:after', function() use($app) {
+            /** @var \MapasCulturais\Entities\Opportunity $owner */
+            $owner = $this->owner;
+            $owner->_newModifiedRevision(sprintf(i::__('campo "%s" adicionado'), $this->fieldName));
+        });
+
+        // Na remoção de campo enviar revisão
+        $app->hook('entity(RegistrationFieldConfiguration).remove:before', function() use($app) {
+            /** @var \MapasCulturais\Entities\Opportunity $owner */
+            $owner = $this->owner;
+            $owner->_newModifiedRevision(sprintf(i::__('campo "%s" removido'), $this->fieldName));
+        });
+
+        // Na edição de anexo enviar revisão
+        $app->hook('entity(RegistrationFileConfiguration).update:after', function() use($app) {
+            /** @var \MapasCulturais\Entities\Opportunity $owner */
+            $owner = $this->owner;
+            $owner->_newModifiedRevision(sprintf(i::__('anexo "%s" modificado'), $this->fileGroupName));
+        });
+
+        // Na criação de anexo enviar revisão
+        $app->hook('entity(RegistrationFileConfiguration).insert:after', function() use($app) {
+            /** @var \MapasCulturais\Entities\Opportunity $owner */
+            $owner = $this->owner;
+            $owner->_newModifiedRevision(sprintf(i::__('anexo "%s" adicionado'), $this->fileGroupName));
+        });
+
+        // Na criação de anexo enviar revisão
+        $app->hook('entity(RegistrationFileConfiguration).remove:before', function() use($app) {
+            /** @var \MapasCulturais\Entities\Opportunity $owner */
+            $owner = $this->owner;
+            $owner->_newModifiedRevision(sprintf(i::__('anexo "%s" removido'), $this->fileGroupName));
+        });
+
         // adiciona o parecer ao jsonSerialize da registration
         $app->hook('entity(Registration).jsonSerialize', function (&$data) use($app) {
             /** @var \MapasCulturais\Entities\Registration $this */
@@ -345,6 +519,58 @@ class Module extends \MapasCulturais\Module{
                 'label' => i::__('Detalhes das avaliações')
             ];
         });
+
+       // Atualiza a coluna metadata da relação do agente com a avaliação com od dados do summary das avaliações no momento de inserir, atualizar ou remover.
+        $app->hook("entity(RegistrationEvaluation).<<insert|update|remove>>:after", function() use ($app) {
+            $opportunity = $this->registration->opportunity;
+
+            $user = $app->user;
+            if ($opportunity->canUser('@control')) {
+                $user = $this->user;
+            }
+
+            if ($em = $this->getEvaluationMethodConfiguration()) {
+                $em->getUserRelation($user)->updateSummary(flush: true);
+            }
+        });
+
+        // Atualiza a coluna metadata da relação do agente com a avaliação com od dados do summary das avaliações no momento da alteração de status.
+        $app->hook("entity(RegistrationEvaluation).setStatus(<<*>>)", function() use ($app) {
+            /** @var \MapasCulturais\Entities\RegistrationEvaluation $this */
+            $opportunity = $this->registration->opportunity;
+
+            $user = $app->user;
+            if ($opportunity->canUser('@control')) {
+                $user = $this->user;
+            }
+
+            if ($em = $this->getEvaluationMethodConfiguration()) {
+                $em->getUserRelation($user)->updateSummary(flush: true);
+            }
+        });
+
+        $app->hook("entity(Registration).recreatePermissionCache:after", function(&$users) use ($app) {
+            /** @var \MapasCulturais\Entities\Registration $this */
+            if($em = $this->getEvaluationMethodConfiguration()) {
+                $relations = $em->getAgentRelations();
+                foreach($relations as $relation) {
+                    $relation->updateSummary(flush: true, started: false, completed: false, sent: false);
+                }
+            }
+        });
+
+        // Atualiza a coluna metadata da relação do agente com a avaliação com od dados do summary das avaliações no momento que se atribui uma avaliação.
+        $app->hook("entity(EvaluationMethodConfiguration).recreatePermissionCache:after", function(&$users) use ($app) {
+            /** @var \MapasCulturais\Entities\EvaluationMethodConfiguration $this */
+            foreach ($users as $user) {
+                $relation = $app->repo('EvaluationMethodConfigurationAgentRelation')->findOneBy(['agent' => $user->profile, 'owner' => $this]);
+                if ($relation) {
+                    /** @var \MapasCulturais\Entities\EvaluationMethodConfigurationAgentRelation */
+                    $relation->updateSummary(flush: true, started: false, completed: false, sent: false);
+                }
+            }
+        });
+
     }
 
     function register(){

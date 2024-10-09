@@ -102,7 +102,7 @@ $config = $app->config['social-media'];
                     <a href="<?= $app->createUrl('faq') ?>"><?php i::_e('Dúvidas frequentes'); ?></a>
                 </li>
 
-                <?php if (count($app->config['module.LGPD']) > 0) : ?>
+                <?php if (count($app->config['module.LGPD']) > 0): ?>
                     <?php foreach ($app->config['module.LGPD'] as $slug => $cfg) : ?>
                         <li>
                             <a href="<?= $app->createUrl('lgpd', 'view', [$slug]) ?>"><?= $cfg['title'] ?></a>
@@ -119,13 +119,14 @@ $config = $app->config['social-media'];
         <?php $this->applyTemplateHook("main-footer-reg", "begin") ?>
         <div class="main-footer__reg-content">
             <p>
-                plataforma da comunidade
-                <strong><a href="https://github.com/mapasculturais/mapasculturais/releases/tag/v7.3.58" target="_blank"> mapas culturais</a> </strong>
-                instalado <strong><a href="https://governo.app">por governo.app</a> </strong>
+                <?php i::_e("plataforma criadddda pela comunidade") ?>
+                <span class="mapas"> <mc-icon name="map"></mc-icon><?php i::_e("mapas culturais"); ?> </span>
+                <?php i::_e("e desenvolvida por "); ?><strong>hacklab<span style="color: red">/</span></strong>
             </p>
 
-            <a class="link" href="https://desenvolvimento.jaboatao.pe.gov.br/">
-                Jaboatão dos Guararapes
+            <a class="link" href="https://github.com/mapasculturais">
+                <?php i::_e("Conheça o repositório") ?>
+                <mc-icon name="github"></mc-icon>
             </a>
         </div>
         <?php $this->applyTemplateHook("main-footer-reg", "end") ?>

@@ -13,7 +13,11 @@ $this->import('
 <div class="col-12 agent-data">
     <template v-if="verifyFields()">
         <div class="agent-data__title">
-            <h4 class="title bold"><?php i::_e("Dados Pessoais") ?></h4>
+            <h4 class="title bold"><?php i::_e("Dados Pessoais") ?>
+                <?php if($this->isEditable()): ?>
+                    <?php $this->info('cadastro -> configuracoes-entidades -> dados-pessoais') ?>
+                <?php endif; ?>
+            </h4>
         </div>
         <div class="agent-data__fields">
             <div v-if="entity.nomeCompleto" class="agent-data__fields--field">
@@ -74,13 +78,23 @@ $this->import('
     </template>
     <template v-if="verifySensitiveFields() && entity.currentUserPermissions.viewPrivateData">
         <div class="agent-data__secondTitle">
-            <h4 class="title bold"><?php i::_e("Dados pessoais sensíveis") ?></h4>
+            <h4 class="title bold"><?php i::_e("Dados pessoais sensíveis") ?>
+                <?php if($this->isEditable()): ?>
+                    <?php $this->info('cadastro -> configuracoes-entidades -> dados-pessoais-sensiveis') ?>
+                <?php endif; ?>
+            </h4>
         </div>
         <div class="agent-data__fields">
             <div v-if="entity.dataDeNascimento" class="agent-data__fields--field">
                 <label class="title"><?php i::_e("Data de Nascimento") ?></label>
                 <div class="box">
                     <label class="box__content">{{entity.dataDeNascimento.date('long year')}}</label>
+                </div>
+            </div>
+            <div v-if="entity.dataDeNascimento" class="agent-data__fields--field">
+                <label class="title"><?php i::_e("Pessoa idosa") ?></label>
+                <div class="box">
+                    <label class="box__content">{{entity.idoso ? 'Sim' : 'Não'}}</label>
                 </div>
             </div>
             <div v-if="entity.genero" class="agent-data__fields--field">

@@ -35,6 +35,16 @@ $this->breadcrumb = [
     ['label' => $label, 'url' => $app->createUrl('search', 'projects')],
     ['label' => $entity->name, 'url' => $app->createUrl('project', 'single', [$entity->id])],
 ];
+
+$children_id = [];
+foreach($entity->children as $children) {
+    $children_id[] = $children->id;
+}
+
+if($children_id ){
+    $children_id  = implode(",", $children_id );
+}
+
 ?>
 
 <div class="main-app">
@@ -55,7 +65,7 @@ $this->breadcrumb = [
             </dl>
         </template>
     </entity-header>
-    <mc-tabs class="tabs">
+    <mc-tabs class="tabs" sync-hash>
         <mc-tab icon="exclamation" label="<?= i::_e('Informações') ?>" slug="info">
             <div class="tabs__info">
                 <mc-container>
@@ -77,7 +87,7 @@ $this->breadcrumb = [
                             </div>
                             <div v-if="entity.longDescription!=null" class="col-12">
                                 <h2><?php i::_e('Descrição Detalhada'); ?></h2>
-                                <p v-html="entity.longDescription" class="single-project__longdescription"></p>
+                                <p class="description" v-html="entity.longDescription"></p>
 
                             </div>
                             <entity-files-list v-if="entity.files.downloads!= null" :entity="entity" classes="col-12" group="downloads" title="<?php i::esc_attr_e('Arquivos para download'); ?>"></entity-files-list>
@@ -110,7 +120,7 @@ $this->breadcrumb = [
             <div class="single-project__subproject">
                 <mc-container>
                     <main class="grid-12">
-                        <mc-entities v-if="entity.children" type="project" select="name,type,shortDescription,files.avatar,seals,terms" :query="{id: `IN(${entity.children})`}" :limit="20" watch-query>
+                        <mc-entities v-if="entity.children" type="project" select="name,type,shortDescription,files.avatar,seals,terms" :query="{id: `IN(<?=$children_id?>)`}" :limit="20" watch-query>
                             <template #default="{entities}">
                                 <entity-card :entity="entity" v-for="entity in entities" :key="entity.__objectId" class="col-12">
                                     <template #avatar>

@@ -20,7 +20,7 @@ docker build -t softagon/mapasculturais-db:latest -f docker/Dockerfile-db .
 ou
 
 ```bash
-docker-compose -f docker-build.yml build
+docker compose -f docker-build.yml up -d
 ```
 
 ### Configurando o sistema

@@ -16,16 +16,16 @@
         </div>
 
         <div>
-            <p><label><?= i::__('Pontuação total: ') ?></label> <strong>{{registration.consolidatedResult}}</strong></p>
+            <p><label><?= i::__('Pontuação total: ') ?></label> <strong>{{registration.score}}</strong></p>
             <p><label><?= i::__('Pontuação máxima: ') ?></label> <strong>{{registration.consolidatedDetails.maxScore}}</strong></p>
         </div>
     </div>
 
-    <div v-if="registration.consolidatedDetails.appliedAffirmativePolicy" 
-         v-for="policy in [registration.consolidatedDetails.appliedAffirmativePolicy]" class="registration-results__card-content">                    
+    <div v-if="registration.consolidatedDetails.appliedPointReward" 
+         v-for="policy in [registration.consolidatedDetails.appliedPointReward]" class="registration-results__card-content">                    
         <div class="registration-results__opinion registration-results__opinion--document">
             <h5 class="registration-results__opinion-title bold">
-                <?= i::__('Políticas afirmativas') ?>
+                <?= i::__('Bônus por pontuação') ?>
             </h5>
 
             <div>
