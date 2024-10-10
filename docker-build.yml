@@ -41,7 +41,7 @@ services:
 ## para os usuários no caso de o ambiente de homologação utilizar um banco de dados cópia
 ## de produção
 
-#  smtp: 
-#    image: mailhog/mailhog
-#    ports:
-#      - "8025:8025"
+  # smtp: 
+  #   image: mailhog/mailhog
+  #   ports:
+  #     - "8025:8025"
