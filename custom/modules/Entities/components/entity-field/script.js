@@ -7,12 +7,7 @@ app.component('entity-field', {
         return { hasSlot }
     },
 
-    created() {
-        
-    },
-
-    data() {
-         
+    data() {         
         let uid = Math.random().toString(36).slice(2);
         let description, 
             value = this.entity[this.prop];
@@ -64,7 +59,8 @@ app.component('entity-field', {
             description: description,
             propId: `${this.entity.__objectId}--${this.prop}--${uid}`,
             fieldType,
-
+            currencyValue: this.entity[this.prop],
+            readonly: false
         }
     },
 
@@ -81,11 +77,18 @@ app.component('entity-field', {
             type: String,
             default: null
         },
+        placeholder: {
+            type: String
+        },
         type: {
             type: String,
             default: null
         },
         hideLabel: {
+            type: Boolean,
+            default: false
+        },
+        hideDescription: {
             type: Boolean,
             default: false
         },
@@ -120,6 +123,19 @@ app.component('entity-field', {
             type: Boolean,
             default: false
         },
+        mask: {
+            type: String,
+            default: null,
+        },
+    },
+
+    created() {
+        this.isReadonly();
+
+        window.addEventListener(
+            "entitySave",
+            this.isReadonly
+        );
     },
 
     computed: {
@@ -144,13 +160,24 @@ app.component('entity-field', {
     },
     
     methods: {
+        isRadioChecked(value, optionValue) {
+            if(value == optionValue) {
+                return true;
+            }
+
+            if(value == null && this.description?.default) {
+                return optionValue == this.description?.default;
+            }
+            
+            return false;            
+        },
         propExists(){
             return !! this.entity.$PROPERTIES[this.prop];
         },
 
         change(event, now) {
             clearTimeout(this.__timeout);
-            let oldValue = this.entity[this.prop];
+            let oldValue = this.entity[this.prop] ? JSON.parse(JSON.stringify(this.entity[this.prop])) : null;
             
             this.__timeout = setTimeout(() => {
                if(this.is('date') || this.is('datetime') || this.is('time')) {
@@ -161,30 +188,25 @@ app.component('entity-field', {
                     }
 
                     this.$emit('change', {entity: this.entity, prop: this.prop, oldValue: oldValue, newValue: event});
+                } else if(this.is('currency')) {
+                    this.entity[this.prop] = this.currencyValue;
+                    this.$emit('change', {entity: this.entity, prop: this.prop, oldValue: oldValue, newValue: event.target.checked});
                 } else if(this.is('checkbox')) {
                     this.entity[this.prop] = event.target.checked;
                     this.$emit('change', {entity: this.entity, prop: this.prop, oldValue: oldValue, newValue: event.target.checked});
                 } else if (this.is('multiselect')) {
-
                     if (this.entity[this.prop] === '' || !this.entity[this.prop]) {
                         this.entity[this.prop] = []
                     } else if (typeof this.entity[this.prop] !== 'object') {
                         this.entity[this.prop] = this.entity[this.prop].split(";");
                     }
 
-                    if (!this.entity[this.prop].includes(event.target.value)){
-                        if (event.target.value === '') {
-                            this.entity[this.prop] = [];
-                        } else {
-                            let index = this.entity[this.prop].indexOf('');
-
-                            if (index >= 0) {
-                                this.entity[this.prop].splice(index, 1);
-                            }
-                        }
-
-                        this.entity[this.prop].push(event.target.value);
-                    }  
+                    let index = this.entity[this.prop].indexOf(event.target.value);
+                    if (index >= 0) {
+                        this.entity[this.prop].splice(index, 1);
+                    } else {
+                        this.entity[this.prop].push(event.target.value)
+                    }
 
                     this.$emit('change', {entity: this.entity, prop: this.prop, oldValue: oldValue, newValue: event.target.value});
                 } else {
@@ -192,12 +214,10 @@ app.component('entity-field', {
                     this.$emit('change', {entity: this.entity, prop: this.prop, oldValue: oldValue, newValue: event.target.value});
                 }
 
-                if (this.autosave && (now || this.entity[this.prop] != oldValue)) {
-                    clearTimeout(this.entity.__autosaveTimeout);
-                    this.entity.__autosaveTimeout = setTimeout(() => {
-                        this.entity.save();
+                if (this.autosave && (now || JSON.stringify(this.entity[this.prop]) != JSON.stringify(oldValue))) {
+                    this.entity.save(now ? 0 : this.autosave).then(() => {
                         this.$emit('save', this.entity);
-                    }, now ? 0 : this.autosave);
+                    });
                 }
 
             }, now ? 0 : this.debounce);
@@ -205,6 +225,18 @@ app.component('entity-field', {
 
         is(type) {
             return this.fieldType == type;
+        },
+
+        isReadonly() {
+            const userPermission = this.entity.currentUserPermissions?.modifyReadonlyData;
+
+            if(this.description.readonly) {
+                if(userPermission || !this.value) {
+                    this.readonly = false;
+                } else {
+                    this.readonly = true;
+                }
+            }
         }
     },
 });

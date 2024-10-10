@@ -261,7 +261,7 @@ class API {
         return this.fetch('find', query, {list, raw, rawProcessor});
     }
 
-    async fetch(endpoint, query, {list, raw, rawProcessor}) {
+    async fetch(endpoint, query, {list, raw, rawProcessor, refresh}) {
         let url = this.createApiUrl(endpoint, query);
         return this.GET(url).then(response => response.json().then(objs => {
             let result;
@@ -271,24 +271,30 @@ class API {
                 result = objs.map(rawProcessor);
 
                 if(list) {
-                    objs.forEach(element => {
+                    result.forEach(element => {
                         list.push(element);
                     });
                 }
             } else {
                 result = list || [];
-    
+                
                 objs.forEach(element => {
-                    let entity = this.getEntityInstance(element[this.$PK]);
-                    entity.populate(element);
+                    const api = new API(element['@entityType'], this.scope);
+                    const entity = api.getEntityInstance(element[api.$PK]);
+                    entity.populate(element, !refresh);
                     result.push(entity);
                     entity.$LISTS.push(result);
                 });
             }
 
-            result.metadata = JSON.parse(response.headers.get('API-Metadata'));
             
-            return result;
+            if(list) {
+                list.metadata = JSON.parse(response.headers.get('API-Metadata'));
+                return list;
+            }else {
+                result.metadata = JSON.parse(response.headers.get('API-Metadata'));
+                return result;
+            }
         }));
     }
 

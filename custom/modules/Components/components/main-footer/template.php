@@ -1,8 +1,10 @@
 <?php
+
 /**
  * @var MapasCulturais\App $app
  * @var MapasCulturais\Themes\BaseV2\Theme $this
  */
+
 use MapasCulturais\i;
 
 $this->import('
@@ -10,11 +12,11 @@ $this->import('
 ');
 $config = $app->config['social-media'];
 ?>
-<?php $this->applyTemplateHook("main-footer", "before")?>
+<?php $this->applyTemplateHook("main-footer", "before") ?>
 <div v-if="globalState.visibleFooter" class="main-footer">
-    <?php $this->applyTemplateHook("main-footer", "begin")?>
+    <?php $this->applyTemplateHook("main-footer", "begin") ?>
     <div class="main-footer__content">
-        <?php $this->applyTemplateHook("main-footer-logo", "before")?>
+        <?php $this->applyTemplateHook("main-footer-logo", "before") ?>
         <div class="main-footer__support">
             <?php $this->part('footer-support-message') ?>
         </div>
@@ -22,7 +24,7 @@ $config = $app->config['social-media'];
             <div class="main-footer__content--logo-img">
                 <theme-logo href="<?= $app->createUrl('site', 'index') ?>"></theme-logo>
             </div>
-    
+
             <div class="main-footer__content--logo-share">
                 <?php foreach ($config as $conf) : ?>
                     <a target="_blank" href="<?= $conf['link'] ?>">
@@ -31,12 +33,12 @@ $config = $app->config['social-media'];
                 <?php endforeach; ?>
             </div>
         </div>
-        <?php $this->applyTemplateHook("main-footer-logo", "after")?>
-    
-        <?php $this->applyTemplateHook("main-footer-links", "before")?>
+        <?php $this->applyTemplateHook("main-footer-logo", "after") ?>
+
+        <?php $this->applyTemplateHook("main-footer-links", "before") ?>
         <div class="main-footer__content--links">
-            <?php $this->applyTemplateHook("main-footer-links", "begin")?>
-    
+            <?php $this->applyTemplateHook("main-footer-links", "begin") ?>
+
             <ul class="main-footer__content--links-group">
                 <li>
                     <a><?php i::_e("Acesse"); ?></a>
@@ -67,7 +69,7 @@ $config = $app->config['social-media'];
                     </a>
                 </li>
             </ul>
-    
+
             <ul class="main-footer__content--links-group">
                 <li>
                     <a href="<?= $app->createUrl('panel', 'index') ?>"><?php i::_e('Painel'); ?></a>
@@ -86,20 +88,20 @@ $config = $app->config['social-media'];
                 </li>
                 <?php if (!($app->user->is('guest'))) : ?>
                     <li>
-                        <a href="<?= $app->createUrl('auth', 'logout') ?>"><?php i::_e('Sair')?></a>
+                        <a href="<?= $app->createUrl('auth', 'logout') ?>"><?php i::_e('Sair') ?></a>
                     </li>
                 <?php endif; ?>
             </ul>
-    
-                <ul class="main-footer__content--links-group">
-                    <li>
-                        <a><?php i::_e('Ajuda e privacidade'); ?></a>
-                    </li>
-                    
-                    <li>
-                        <a href="<?= $app->createUrl('faq') ?>"><?php i::_e('Dúvidas frequentes'); ?></a>
-                    </li>
-                    
+
+            <ul class="main-footer__content--links-group">
+                <li>
+                    <a><?php i::_e('Ajuda e privacidade'); ?></a>
+                </li>
+
+                <li>
+                    <a href="<?= $app->createUrl('faq') ?>"><?php i::_e('Dúvidas frequentes'); ?></a>
+                </li>
+
                 <?php if (count($app->config['module.LGPD']) > 0): ?>
                     <?php foreach ($app->config['module.LGPD'] as $slug => $cfg) : ?>
                         <li>
@@ -107,28 +109,30 @@ $config = $app->config['social-media'];
                         </li>
                     <?php endforeach ?>
                 <?php endif; ?>
-                </ul>
-            <?php $this->applyTemplateHook("main-footer-links", "end")?>
+            </ul>
+            <?php $this->applyTemplateHook("main-footer-links", "end") ?>
         </div>
-        <?php $this->applyTemplateHook("main-footer-links", "after")?>      
+        <?php $this->applyTemplateHook("main-footer-links", "after") ?>
     </div>
-    <?php $this->applyTemplateHook("main-footer-reg", "before")?>
+    <?php $this->applyTemplateHook("main-footer-reg", "before") ?>
     <div class="main-footer__reg">
-        <?php $this->applyTemplateHook("main-footer-reg", "begin")?>
+        <?php $this->applyTemplateHook("main-footer-reg", "begin") ?>
         <div class="main-footer__reg-content">
             <p>
-                plataforma da comunidade
-                <strong><a href="https://github.com/mapasculturais/mapasculturais/releases/tag/v7.3.58" target="_blank"> mapas culturais</a> </strong> 
-               instalado <strong><a href="https://governo.app">por governo.app</a> </strong>
+                <?php i::_e("plataforma da comunidade") ?>
+                <span class="mapas"> <mc-icon name="map"></mc-icon>
+                    <a class="link" href="https://github.com/mapasculturais/mapasculturais/releases" target="_blank">Mapas Culturais</a>
+                </span>
+                e instalado por <strong><a class="link" href="https://governo.app" target="_blank">governo.app<span style="color: red">/</span></a></strong>
             </p>
 
-            <a class="link" href="https://desenvolvimento.jaboatao.pe.gov.br/">
-                Jaboatão dos Guararapes
+            <a class="link" href="https://github.com/mapasculturais">
+                <p><?php echo $app->config['app.siteName']; ?></p>
             </a>
         </div>
-        <?php $this->applyTemplateHook("main-footer-reg", "end")?>
+        <?php $this->applyTemplateHook("main-footer-reg", "end") ?>
     </div>
-    <?php $this->applyTemplateHook("main-footer-reg", "after")?>  
-    <?php $this->applyTemplateHook("main-footer", "end")?>
+    <?php $this->applyTemplateHook("main-footer-reg", "after") ?>
+    <?php $this->applyTemplateHook("main-footer", "end") ?>
 </div>
-<?php $this->applyTemplateHook("main-footer", "after")?>
+<?php $this->applyTemplateHook("main-footer", "after") ?>

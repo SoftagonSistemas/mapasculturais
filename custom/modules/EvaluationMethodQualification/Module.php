@@ -31,7 +31,9 @@ class Module extends \MapasCulturais\EvaluationMethod
     protected function _getConsolidatedResult(Entities\Registration $registration)
     {
         $app = App::i();
-        $status = [ \MapasCulturais\Entities\RegistrationEvaluation::STATUS_EVALUATED,
+        $status = [
+            \MapasCulturais\Entities\RegistrationEvaluation::STATUS_DRAFT,
+            \MapasCulturais\Entities\RegistrationEvaluation::STATUS_EVALUATED,
             \MapasCulturais\Entities\RegistrationEvaluation::STATUS_SENT
         ];
 
@@ -97,16 +99,59 @@ class Module extends \MapasCulturais\EvaluationMethod
     function _getEvaluationDetails(Entities\RegistrationEvaluation $evaluation): array {
         $evaluation_configuration = $evaluation->registration->opportunity->evaluationMethodConfiguration;
 
-        return [];
+        $sections = $evaluation_configuration->sections ?: [];
+        $criteria = $evaluation_configuration->criteria ?: [];
+
+        foreach($sections as &$section) {
+            $section->criteria = [];
+
+            foreach($criteria as &$cri){
+                if(($cri->sid ?? false) == $section->id) {
+                    unset($cri->sid);
+                    $result = isset($evaluation->evaluationData->{$cri->id}) ? $evaluation->evaluationData->{$cri->id} : '';
+                    
+                    $cri->result = $result;
+                    $section->criteria[] = $cri;
+                }
+            }
+        }
+        
+        return [
+            'scores' => $sections,
+            'obs' => $evaluation->evaluationData->obs
+        ];
     }
 
     function _getConsolidatedDetails(Entities\Registration $registration): array {
         $evaluation_configuration = $registration->opportunity->evaluationMethodConfiguration;
-        return [];
+        $sections =  [];
+        $criteria = [];
+
+        if($registration->sentEvaluations){
+            $sections = $evaluation_configuration->sections ?: [];
+            $criteria = $evaluation_configuration->criteria ?: [];
+    
+            foreach($sections as &$section) {
+                $section->criteria = [];
+    
+                foreach($criteria as &$cri){
+                    if(($cri->sid ?? false) == $section->id) {
+                        unset($cri->sid);
+                        $section->criteria[] = $cri;
+                    }
+                }
+            }
+        }
+        
+        return [
+            'scores' => $sections,
+        ];
     }
 
     protected function _register()
     {
+        $app = App::i();
+
         $this->registerEvaluationMethodConfigurationMetadata('sections', [
             'label' => i::__('Seções'),
             'type' => 'json',
@@ -114,7 +159,7 @@ class Module extends \MapasCulturais\EvaluationMethod
                 return json_encode($val);
             },
             'unserialize' => function ($val) {
-                return json_decode($val);
+                return $val ? json_decode($val) : $val;
             }
         ]);
 
@@ -125,9 +170,11 @@ class Module extends \MapasCulturais\EvaluationMethod
                 return json_encode($val);
             },
             'unserialize' => function ($val) {
-                return json_decode($val);
+                return $val ? json_decode($val) : $val;
             }
         ]);
+
+        $app->registerJobType(new JobTypes\Spreadsheet('qualification-spreadsheets'));
     }
 
     function getValidationErrors(Entities\EvaluationMethodConfiguration $evaluation_method_configuration, array $data)

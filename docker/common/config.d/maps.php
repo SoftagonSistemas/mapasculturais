@@ -2,11 +2,11 @@
 
 return [
     'maps.center'  => [
-        -14.2400732, //latitude
-        -53.1805018 // longitude
+        -8.11298, //latitude
+        -35.01500 // longitude
     ],
     
-    'maps.zoom.default'     => 5,
+    'maps.zoom.default'     => 7,
     'maps.zoom.approximate' => 14,
     'maps.zoom.precise'     => 16,
     'maps.zoom.max'         => 18,

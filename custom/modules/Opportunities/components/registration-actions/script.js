@@ -6,6 +6,11 @@ app.component('registration-actions', {
             type: Entity,
             required: true
         },
+
+        editableFields: {
+            type: Boolean,
+            default: false
+        }
     },
 
     setup() {
@@ -14,10 +19,24 @@ app.component('registration-actions', {
     },
 
     mounted() {
-        window.addEventListener("message", (event) => {
+        const self = this;
+
+        globalThis.addEventListener("message", (event) => {
             if (event.data.type == 'registration.update') {
+                let autoSave = false;
+
                 for (let key in event.data.data) {
                     this.registration[key] = event.data.data[key];
+
+                    if(!autoSave) {
+                        autoSave = true;
+                        
+                        clearTimeout(self.autoSaveTimeout);
+    
+                        self.autoSaveTimeout = setTimeout(() => {
+                            self.save();
+                        }, $MAPAS.config.registrationActions.autosaveDebounce);
+                    }
                 }
             }
         });
@@ -26,10 +45,17 @@ app.component('registration-actions', {
     data() {
         return {
             fields: $MAPAS.registrationFields,
+            hideErrors: false,
+            isValidated: false,
+            descriptions: $DESCRIPTIONS.registration
         }
     },
     
     methods: {
+        toggleErrors() {
+            this.hideErrors = !this.hideErrors;
+        },
+
         fieldName(field) {
             if (field == 'agent_instituicao') {
                 return this.text('Instituição responsável'); 
@@ -64,11 +90,16 @@ app.component('registration-actions', {
                     }
                 }
             }
+            
+            if(this.descriptions[field]) {
+                return this.descriptions[field].label
+            }
 
             return this.text('Campo não identificado');
 
         },
         async send() {
+            const route = this.editableFields ? 'sendEditableFields' : 'send';
             const data = {id: this.registration.id};
             if (this.registration.category) {
                 data.category = this.registration.category;
@@ -78,8 +109,12 @@ app.component('registration-actions', {
                 this.registration.disableMessages();
                 await this.save();
                 this.registration.enableMessages();
-                await this.registration.POST('send', {data});
-                document.location.reload();
+                await this.registration.POST(route, {data});
+                if(this.editableFields) {
+                    document.location = this.registration.singleUrl;
+                } else {
+                    document.location.reload();
+                }
             } catch(error) {
                 console.error(error);
             }
@@ -90,6 +125,7 @@ app.component('registration-actions', {
                 await this.save();
                 const success = await this.registration.POST('validateEntity', {});
                 if (success) {
+                    this.isValidated = true;
                     messages.success(this.text('Validado'));
                 }
             } catch (error) {
@@ -102,7 +138,7 @@ app.component('registration-actions', {
             if (iframe) {
                 const promise = new Promise((resolve, reject) => {
                     Promise.all([
-                        registration.save(false),
+                        registration.save(300, false),
                     ]).then((values) => {
                         resolve(values[0]);
                     });
@@ -110,7 +146,7 @@ app.component('registration-actions', {
                 return promise;
 
             } else {
-                return registration.save(false);
+                return registration.save(300, false);
             }
         },
         exit() {

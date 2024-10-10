@@ -1,5 +1,5 @@
 <?php
-$_ENV['APP_MODE'] = 'development';
+$_ENV['APP_MODE'] = 'production';
 $__process_assets = false;
 
 return [

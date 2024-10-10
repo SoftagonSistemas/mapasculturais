@@ -1,6 +1,6 @@
 services:
   mapasculturais:
-    image: mapacultural:jaboatao
+    image: mapacultural:latest
     restart: unless-stopped
     env_file:
       - .env

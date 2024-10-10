@@ -70,14 +70,13 @@ app.component('registration-evaluation-actions', {
             return this.text('Campo não identificado');
         },
         showActions(registration, action){
-
             if(!registration.currentUserPermissions.evaluate){
                 return false;
             }
 
             var result = false;
             this.evaluationRegistrationList.forEach(function(item){
-                if(item.registrationid == registration.id){
+                if(item.registrationId == registration._id){
                     switch (action) {
                         case 'finishEvaluation':
                         case 'save':
@@ -142,9 +141,12 @@ app.component('registration-evaluation-actions', {
             promise.then(() => {
                 this.reloadPage();
             }).catch((res) => {
-                for (let error of res){
-                    console.log(error)
-                    messages.error(error);
+                if(typeof res == "array") {
+                    for (let error of res){
+                        messages.error(error);
+                    }
+                }else {
+                    messages.error(res);
                 }
             })
         },

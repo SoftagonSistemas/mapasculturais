@@ -2,17 +2,34 @@
 
 namespace EvaluationMethodTechnical;
 
+use MapasCulturais\API;
+use MapasCulturais\ApiQuery;
 use MapasCulturais\i;
 use MapasCulturais\App;
+use MapasCulturais\Controller;
+use MapasCulturais\Controllers\Opportunity as ControllersOpportunity;
 use MapasCulturais\Entities;
+use MapasCulturais\Entities\Opportunity;
+use MapasCulturais\Entities\Registration;
 
 class Module extends \MapasCulturais\EvaluationMethod {
+    
+    protected static Module $instance;
+    private $viability_status;
+
     function __construct(array $config = []) {
+        self::$instance = $this;
         $config += ['step' => '0.1'];
         parent::__construct($config);
     }
 
-    private $viability_status;
+    /**
+     * Retorna a instância do módulo
+     * @return Module
+     */
+    public static function i(): Module {
+        return self::$instance;
+    }
 
     public function getSlug() {
         return 'technical';
@@ -77,6 +94,8 @@ class Module extends \MapasCulturais\EvaluationMethod {
     }
     
     protected function _register() {
+        $app = App::i();
+        
         $this->registerEvaluationMethodConfigurationMetadata('sections', [
             'label' => i::__('Seções'),
             'type' => 'json',
@@ -98,9 +117,9 @@ class Module extends \MapasCulturais\EvaluationMethod {
                 return json_decode((string) $val);
             }
         ]);
-
-        $this->registerEvaluationMethodConfigurationMetadata('affirmativePolicies', [
-            'label' => i::__('Políticas Afirmativas'),
+        
+        $this->registerEvaluationMethodConfigurationMetadata('pointReward', [
+            'label' => i::__('Bônus por pontuação'),
             'type' => 'json',
             'serialize' => function ($val){
                 return (!empty($val)) ? json_encode($val) : "[]";
@@ -110,8 +129,8 @@ class Module extends \MapasCulturais\EvaluationMethod {
             }
         ]);
 
-        $this->registerRegistrationMetadata('appliedAffirmativePolicy', [
-            'label' => i::__('Políticas Afirmativas aplicadas a inscrição'),
+        $this->registerRegistrationMetadata('appliedPointReward', [
+            'label' => i::__('Bônus por pontuação aplicadas a inscrição'),
             'type' => 'json',
             'private' => true,
             'serialize' => function ($val){
@@ -123,16 +142,13 @@ class Module extends \MapasCulturais\EvaluationMethod {
             }
         ]);
 
-        $this->registerEvaluationMethodConfigurationMetadata('isActiveAffirmativePolicies', [
-            'label' => i::__('Controla se as politicas afirmativas estão ou não ativadas'),
-            'type' => 'boolean',
-            'serialize' => function ($val){
-                return ($val == "true") ? true : false;
-            }
+        $this->registerEvaluationMethodConfigurationMetadata('isActivePointReward', [
+            'label' => i::__('Controla se as induções por pontuação estão ou não ativadas'),
+            'type' => 'boolean'
         ]);
 
-        $this->registerEvaluationMethodConfigurationMetadata('affirmativePoliciesRoof', [
-            'label' => i::__('Define o valor máximo das políticas afirmativas'),
+        $this->registerEvaluationMethodConfigurationMetadata('pointRewardRoof', [
+            'label' => i::__('Define o valor máximo das induções por pontuação'),
             'type' => 'string',
         ]);
 
@@ -148,14 +164,70 @@ class Module extends \MapasCulturais\EvaluationMethod {
         ]);
 
         $this->registerEvaluationMethodConfigurationMetadata('enableViability',[
-            'label' => i::__('Habilitar Análise de Exiquibilidade das inscrições?'),
+            'label' => i::__('Exequibilidade da inscrição'),
+            'description' => i::__('Ao habilitar esta configuração, os avaliadores deverão considerar a exequibilidade da inscrição. Se a maioria dos avaliadores considerarem a inabilitação por exequibilidade, a mesma será marcada com o status de inválida para o dono do edital, que ainda assim poderá mudar seu status para válida.'),
             'type' => 'radio',
             'options' => array(
-                'true' => i::__('Habilitar Análise de Exiquibilidade'),
+                'true' => i::__('Habilitar'),
                 'false' => i::__('Não habilitar'),
             ),
         ]);
 
+        $this->registerEvaluationMethodConfigurationMetadata('geoQuotaConfiguration', [
+            'label' => i::__('Configuração territorial'),
+            'type' => 'json',
+            'default' => json_encode(['distribution' => (object) [], 'geoDivision' => null])
+        ]);
+
+        $this->registerEvaluationMethodConfigurationMetadata('tiebreakerCriteriaConfiguration', [
+            'label' => i::__('Definição dos critérios de desempate'),
+            'type' => 'json',
+        ]);
+
+        $this->registerEvaluationMethodConfigurationMetadata('quotaConfiguration', [
+            'label' => i::__('Configuração de cotas'),
+            'type' => 'json',
+            'serialize' => function ($val){
+                return (!empty($val)) ? json_encode($val) : "[]";
+            },
+            'unserialize' => function($val){
+                return json_decode((string) $val);
+            }
+        ]);
+
+        $this->registerRegistrationMetadata('appliedForQuota', [
+            'label' => i::__('A inscrição está concorrendo por cotas?'),
+            'type' => 'boolean',
+            'private' => false,
+            'default' => false
+        ]);
+
+        $this->registerEvaluationMethodConfigurationMetadata('cutoffScore', [
+            'label' => i::__('Nota de corte'),
+            'type' => 'float',
+        ]);
+
+        $this->registerOpportunityMetadata('enableQuotasQuestion', [
+            'label' => "Vai concorrer às cotas",
+            'type' => 'boolean',
+            'private' => false,
+            'field_type' => 'radio',
+            'default' => '0',
+            'options' => (object) array(
+                '0' => \MapasCulturais\i::__('Desabilitado'),
+                '1' => \MapasCulturais\i::__('Habilitado'),
+            ),
+        ]);
+
+        $this->registerOpportunityMetadata('considerQuotasInGeneralList', [
+            'label' => i::__('Considerar os cotistas dentro da listagem da ampla concorrência'),
+            'description' => i::__('Ao habilitar esta configuração, os cotistas seráo considerados na listagem da ampla concorrência.'),
+            'type' => 'boolean',
+            'private' => false,
+            'default' => true,
+        ]);
+
+        $app->registerJobType(new JobTypes\Spreadsheet('technical-spreadsheets'));
     }
 
     function enqueueScriptsAndStyles() {
@@ -176,9 +248,426 @@ class Module extends \MapasCulturais\EvaluationMethod {
     public function _init() {
         $app = App::i();
 
-        $plugin = $this;
+        $self = $this;
 
-         // Reconsolida a avaliação da inscrição caso em fases posteriores exista avaliação técnica com políticas afirmativas aplicadas
+
+        // Define o valor da coluna eligible
+        $app->hook('entity(Registration).<<save|send>>:before', function() use($app){
+            /** @var Registration $this */
+            if($this->evaluationMethod && $this->evaluationMethod->slug == 'technical') {
+                $this->eligible = $this->isEligibleForAffirmativePolicies();
+            }
+        });
+
+        // Define o valor da coluna eligible da inscrição no momento do update
+        $app->hook('entity(Registration).<<save|send>>:after', function() use($app){
+            /** @var Registration $this */
+            $app->disableAccessControl();
+
+            if($next_phase = $this->nextPhase){
+                $next_phase->eligible = $this->eligible;
+                $next_phase->save(true);
+            }
+            $app->enableAccessControl();
+        });
+
+        // Devolve se a inscrição é elegível a participar das cotas
+        $app->hook('Entities\\Registration::isEligibleForAffirmativePolicies', function() use($self) {
+            /** 
+             * @var Registration $this 
+             * @var Module $self 
+             **/
+            $registration = $this;
+            $em = $registration->evaluationMethodConfiguration;
+            
+            $registration->isFirstPhase;
+            $opportunity_first_phase = $registration->opportunity->firstPhase;
+            $_registration = $registration->isFirstPhase ? $this : $this->firstPhase;
+            if($opportunity_first_phase->enableQuotasQuestion && !$_registration->appliedForQuota) {
+                return false;
+            }
+            
+            if(!$em) {
+                return false;
+            }
+
+            if($quota_configurations = $em->quotaConfiguration) {
+                if($rules = $quota_configurations->rules) {
+                    foreach($rules as $rule) {
+                        if($self->qualifiesForQuotaRule($rule, $registration)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            return false;
+        });
+
+        $app->hook('Entities\\Opportunity::isAffirmativePoliciesActive', function() use($self) {
+            /** @var Opportunity $this */
+        
+            $result = false;
+            $opportunity = $this;
+
+            do{
+                $em = $opportunity->evaluationMethodConfiguration;
+                
+                if($em && ($em->quotaConfiguration || $em->pointReward)) {
+                    $result = true;
+                }
+
+                if($opportunity->isFirstPhase) {
+                    $opportunity = null;
+                } else {
+                    $opportunity = $opportunity->previousPhase;
+                }
+                
+            } while ($opportunity);
+
+            return $result;
+        });
+
+        $app->hook('Entities\\Opportunity::hadTechnicalEvaluationPhase', function() use($self) {
+            /** @var Opportunity $this */
+        
+            $result = false;
+            $opportunity = $this;
+            
+            do{
+                $em = $opportunity->getEvaluationMethod();
+                
+                if($em && $em->slug == 'technical') {
+                    $result = true;
+                }
+
+                if($opportunity->isFirstPhase) {
+                    $opportunity = null;
+                } else {
+                    $opportunity = $opportunity->previousPhase;
+                }
+                
+            } while ($opportunity);
+
+            return $result;
+        });
+        
+        $app->hook('entity(Registration).consolidateResult', function(&$result) use ($self) {
+            /** @var Registration $this */
+            $app = App::i();
+
+            $em = $this->evaluationMethod;
+            if($em->slug === "technical") {
+                $registration = $this;
+                $connection = $app->em->getConnection();
+
+                $app->disableAccessControl();
+
+                $score = $self->applyPointReward((float) $this->consolidatedResult, $registration);
+                $eligible = $this->isEligibleForAffirmativePolicies() ? 'true' : 'false';
+                
+                do {
+                    $connection->executeQuery("UPDATE registration SET score = :score, eligible = '{$eligible}' WHERE id = :id", [
+                        'score' => $score,
+                        'id' => $registration->id
+                    ]);
+                }
+                while($registration = $this->nexPhase);
+               
+                $app->enableAccessControl();
+                
+                // limpa o cache das cotas
+                $cache_key = "{$this->opportunity}:quota-registrations";
+                $app->cache->delete($cache_key);
+                
+            }
+           
+        });
+
+
+        $quota_data = null;
+
+        $app->hook('ApiQuery(registration).params', function(&$params) use($app, $self, &$quota_data) {
+            /** @var ApiQuery $this */
+
+            $order = $params['@order'] ?? '';
+            preg_match('#EQ\((\d+)\)#', $params['opportunity'] ?? '', $matches);
+            $phase_id = $matches[1] ?? null;
+            if($phase_id && str_starts_with(strtolower(trim($order)), '@quota')){
+                $quota_data = (object) [];                
+
+                $quota_data->objectId = spl_object_id($this);
+                $quota_data->params = $params;
+                $quota_data->quota = new Quotas($phase_id);
+
+                unset($params['@order']);
+                $quota_order = $quota_data->quota->getRegistrationsOrderByScoreConsideringQuotas($params);
+                $opportunity = $app->repo('Opportunity')->find($phase_id);
+                $opportunity->registerRegistrationMetadata();
+
+                if($limit = (int) ($params['@limit'] ?? 0)) {
+                    $ids_params = $params;
+                    unset(
+                        $ids_params['@limit'], 
+                        $ids_params['@order'], 
+                        $ids_params['@page'],
+                        $ids_params['oppotunity'],
+                    );
+                    $ids_params['@select'] = 'id';
+
+                    /** @var ControllersOpportunity $opportunity_controller */
+                    $opportunity_controller = $app->controller('opportunity');
+                    $result = $opportunity_controller->apiFindRegistrations($opportunity, $ids_params);
+                    $_ids = [];
+                    foreach($result->registrations as $reg) {
+                        $_ids[$reg['id']] = $reg['id'];
+                    }
+
+                    $ids = [];
+                    foreach($quota_order as $reg) {
+                        if(isset($_ids[$reg->id])) {
+                            $ids[] = $reg->id;
+                        }
+                    }
+
+                    $quota_data->foundIds = $ids;
+
+                    $page = $params['@page'] ?? 1;
+                    $offset = ($page - 1) * $limit;
+                    $ids = array_slice($ids, $offset, $limit);
+                    // eval(\psy\sh());
+                    
+                } else {
+                    $ids = array_map(fn($reg) => $reg->id, $quota_order);
+                    $quota_data->foundIds = $ids;
+                }
+
+                $params['id'] = API::IN($ids);
+                    
+
+                $quota_data->order = $quota_order;
+                $quota_data->ids = $ids;
+
+                unset(
+                    $params['@page'],
+                    $params['@limit']
+                );
+                
+            }
+        });
+
+        $app->hook('ApiQuery(registration).findResult', function(&$result) use(&$quota_data) {
+            /** @var ApiQuery $this */
+            if(($quota_data->objectId ?? false) == spl_object_id($this)) {
+                $_new_result = [];
+                $quota_fields = $quota_data->quota->registrationFields;
+                foreach($quota_data->ids as $id) {
+                    foreach($result as $registration) {
+                        if($registration['id'] == $id) {
+                            $_new_result[] = array_merge($registration, $quota_fields[$id] ?? []);
+                        }
+                    }
+                }
+                $result = $_new_result;
+                $quota_data->result = $result;
+            }
+        });
+
+        $app->hook('ApiQuery(registration).countResult', function(&$result) use(&$quota_data) {
+            if(($quota_data->objectId ?? false) == spl_object_id($this)) {
+                $result = count($quota_data->foundIds);
+            }
+        });
+            
+
+        $app->hook('API.find(registration).result', function() use($quota_data) {
+            /** @var Controller $this */
+            if(($quota_data->objectId ?? false) == spl_object_id($this)) {
+                $this->apiAddHeaderMetadata($quota_data->params, $quota_data->result, count($quota_data->foundIds));
+            }
+        });
+
+        $app->hook('template(opportunity.registrations.registration-list-actions-entity-table):begin', function($entity){
+            if($em = $entity->evaluationMethodConfiguration){
+                if($em->getEvaluationMethod()->slug == "technical"){
+                    $this->part('technical--apply-results');
+                }
+            }
+        });
+
+        $app->hook('POST(opportunity.applyTechnicalEvaluation)', function() use($self) {
+            /** @var ControllersOpportunity $this */
+            $this->requireAuthentication();
+
+            set_time_limit(0);
+            ini_set('max_execution_time', 0);
+            ini_set('memory_limit', '-1');
+    
+            $app = App::i();
+
+            $opp = $this->requestedEntity;
+    
+            $opp->checkPermission('@control');
+
+            $type = $opp->evaluationMethodConfiguration->definition->slug;
+    
+            if($type != 'technical') {
+                $this->errorJson(i::__('Somente para avaliações técnicas'), 400);
+                die;
+            }
+            
+            $statusIn = API::IN([1,3,8,10]);
+            $query_params = [
+                '@select' => 'id,score', 
+                'opportunity' => "EQ({$opp->id})",
+                '@order' => 'score DESC'
+            ];
+
+            // TAB POR PONTUAÇÃO
+            if($this->data['tabSelected'] === 'score') {
+                if(!isset($this->data['setStatusTo'])) {
+                    $this->errorJson(i::__('Por favor selecione um status para ser aplicado.'), 400);
+                }
+                
+                if ($this->data['setStatusTo'] && (!is_numeric($this->data['setStatusTo']) || !in_array($this->data['setStatusTo'], [0,1,2,3,8,10]))) {
+                    $this->errorJson(i::__('Os status válidos são 0, 1, 2, 3, 8 e 10'), 400);
+                    die;
+                }
+
+                $new_status = intval($this->data['setStatusTo']);
+                $statusNotEqual =  API::NOT_EQ($new_status);
+                $min = $this->data['from'][0];
+                $max = $this->data['from'][1];
+                
+                $query_params['status'] = "AND($statusNotEqual, $statusIn)";
+                $query_params['score'] = "AND(GTE({$min}), LTE({$max}))";
+
+                $query = new ApiQuery(Registration::class, $query_params);
+                $registrations = $query->findIds();
+                $total = count($registrations);
+
+                foreach($registrations as $i => $reg) {
+                    $count = $i+1;
+                    /** @var Registration $registration */
+                    $registration = $app->repo('Registration')->find($reg);
+                    $registration->skipSync = true;
+                    $registration->__skipQueuingPCacheRecreation = true;
+
+                    $app->log->debug("{$count}/{$total} Alterando status da inscrição {$registration->number} para {$new_status}");
+                    switch ($new_status) {
+                        case Registration::STATUS_DRAFT:
+                            $registration->setStatusToDraft();
+                        break;
+                        case Registration::STATUS_INVALID:
+                            $registration->setStatusToInvalid();
+                        break;
+                        case Registration::STATUS_NOTAPPROVED:
+                            $registration->setStatusToNotApproved();
+                        break;
+                        case Registration::STATUS_WAITLIST:
+                            $registration->setStatusToWaitlist();
+                        break;
+                        case Registration::STATUS_APPROVED:
+                            $registration->setStatusToApproved();
+                        break;
+                        case Registration::STATUS_SENT:
+                            $registration->setStatusToSent();
+                        break;
+                        default:
+                            $registration->_setStatusTo($new_status);
+                    }
+
+                    $app->em->clear();
+                }
+            }
+
+            // TAB POR CLASSIFICAÇÃO
+            if($this->data['tabSelected'] === 'classification') {
+                $early_registrations = $this->data['earlyRegistrations'];
+                $wait_list = $this->data['waitList'];
+                $invalidate_registrations = $this->data['invalidateRegistrations'];
+
+                $cutoff_score = $this->data['cutoffScore'];
+                $quantity_vacancies = $this->data['quantityVacancies'];
+                $consider_quotas = $this->data['considerQuotas'];
+
+                $query_params['status'] = $statusIn;
+                
+                // considerar cotas
+                if($consider_quotas) {
+                    $query_params['@order'] = '@quota';
+                }
+
+                $query = new ApiQuery(Registration::class, $query_params);
+                $registrations = $query->getFindResult();
+                $total = count($registrations);
+                
+                // selecionar os primeiros
+                if($early_registrations) {
+                    for($i = 0; $i < $quantity_vacancies; $i++) {
+                        $count = $i+1;
+                        if($registrations[$i]['score'] >= $cutoff_score) {
+                            $registration_id = $registrations[$i]['id'];
+                            /** @var Registration $registration */
+                            $registration = $app->repo('Registration')->find($registration_id);
+                            $registration->skipSync = true;
+                            $registration->__skipQueuingPCacheRecreation = true;
+
+                            $app->log->debug("{$count}/{$total} Alterando status da inscrição {$registration->number} para SELECIONADO");
+                            $registration->setStatusToApproved();
+                            $app->em->clear();
+                        }
+                        
+                    }
+                }
+
+                // marcar como suplente as inscrições com nota acima da nota de corte mas que não foram selecionados (posição inferior ao máximo de vagas)
+                if($wait_list) {
+                    for($i = $quantity_vacancies; $i < count($registrations); $i++) {
+                        $count = $i+1;
+                        if($registrations[$i]['score'] >= $cutoff_score) {
+                            $registration_id = $registrations[$i]['id'];
+                            /** @var Registration $registration */
+                            $registration = $app->repo('Registration')->find($registration_id);
+                            $registration->skipSync = true;
+                            $registration->__skipQueuingPCacheRecreation = true;
+
+                            $app->log->debug("{$count}/{$total} Alterando status da inscrição {$registration->number} para SUPLENTE");
+                            $registration->setStatusToWaitlist();
+                            $app->em->clear();
+                        }  
+                    }
+                }
+
+                // eliminar as inscrições com nota inferior a nota de corte
+                if($invalidate_registrations) {
+                    foreach($registrations as $i => $reg) {
+                        $count = $i+1;
+                        if($reg['score'] < $cutoff_score) {
+                            /** @var Registration $registration */
+                            $registration = $app->repo('Registration')->find($reg['id']);
+                            $registration->skipSync = true;
+                            $registration->__skipQueuingPCacheRecreation = true;
+
+                            $app->log->debug("{$count}/{$total} Alterando status da inscrição {$registration->number} para INVÁLIDO");
+                            $registration->setStatusToNotApproved();
+                            $app->em->clear();
+                        }
+                    }
+                }
+            }
+
+            if($next_phase = $opp->nextPhase) {
+                $next_phase->enqueueRegistrationSync();
+            }
+
+            $opp->enqueueToPCacheRecreation();
+
+            $this->finish(sprintf(i::__("Avaliações aplicadas à %s inscrições"), count($registrations)), 200);
+        });
+
+
+         // Reconsolida a avaliação da inscrição caso em fases posteriores exista avaliação técnica com bônus por pontuação aplicadas
          $app->hook('entity(Registration).update:after', function() use ($app){
             /** @var \MapasCulturais\Entities\Registration $this */
             $phase = $this;
@@ -195,19 +684,19 @@ class Module extends \MapasCulturais\EvaluationMethod {
         });
 
 
-        // Insere valores das políticas afirmativas aplicadas na planilha de inscritos
+        // Insere valores das bônus por pontuação aplicadas na planilha de inscritos
         $app->hook('opportunity.registrations.reportCSV', function(\MapasCulturais\Entities\Opportunity $opportunity, $registrations, &$header, &$body) use ($app){
             
-            $isActiveAffirmativePolicies = filter_var($opportunity->evaluationMethodConfiguration->isActiveAffirmativePolicies, FILTER_VALIDATE_BOOL);
+            $isActivePointReward = $opportunity->evaluationMethodConfiguration ? filter_var($opportunity->evaluationMethodConfiguration->isActivePointReward, FILTER_VALIDATE_BOOL) : false;
 
-            if($isActiveAffirmativePolicies){
+            if($isActivePointReward){
 
                 $header[] = 'POLITICAS-AFIRMATIVAS';
                             
                 foreach($body as $i => $line){    
                     $reg = $app->repo("Registration")->findOneBy(['number' => $line[0], 'opportunity' => $opportunity]);
 
-                    $policies = $reg->appliedAffirmativePolicy;
+                    $policies = $reg->appliedPointReward;
 
                     if(!$policies || !$policies->rules){
                         continue;
@@ -215,7 +704,7 @@ class Module extends \MapasCulturais\EvaluationMethod {
 
                     $valuePencentage = (($policies->raw * $policies->percentage)/100);
                     $cell = "";
-                    $cell.= "Políticas afirmativas atribuídas \n\n";
+                    $cell.= "Bônus por pontuação atribuídos \n\n";
                     foreach($policies->rules as $k => $rule){
                         $_value = is_array($rule->value) ? implode(",", $rule->value) : $rule->value;
                         $cell.= "{$rule->field->title}: {$_value} (+{$rule->percentage}%)\n";
@@ -232,17 +721,17 @@ class Module extends \MapasCulturais\EvaluationMethod {
 
         });
 
-        // passa os dados de configuração das políticas afirmativas para JS
-        $app->hook('GET(opportunity.edit):before', function() use ($app, $plugin){
+        // passa os dados de configuração das bônus por pontuação para JS
+        $app->hook('GET(opportunity.edit):before', function() use ($app, $self){
             $entity = $this->requestedEntity;
             if($entity->evaluationMethodConfiguration){
-                $app->view->jsObject['affirmativePoliciesFieldsList'] = $plugin->getFieldsAllPhases($entity);
+                $app->view->jsObject['pointsByInductionFieldsList'] = $self->getFieldsAllPhases($entity);
                
                 $evaluationMethodConfiguration = $entity->evaluationMethodConfiguration;
     
-                $app->view->jsObject['isActiveAffirmativePolicies'] = $evaluationMethodConfiguration->isActiveAffirmativePolicies;
-                $app->view->jsObject['affirmativePolicies'] = $evaluationMethodConfiguration->affirmativePolicies;
-                $app->view->jsObject['affirmativePoliciesRoof'] = $evaluationMethodConfiguration->affirmativePoliciesRoof;
+                $app->view->jsObject['isActivePointReward'] = $evaluationMethodConfiguration->isActivePointReward;
+                $app->view->jsObject['pointReward'] = $evaluationMethodConfiguration->pointReward;
+                $app->view->jsObject['pointRewardRoof'] = $evaluationMethodConfiguration->pointRewardRoof;
             }
         });
 
@@ -349,6 +838,25 @@ class Module extends \MapasCulturais\EvaluationMethod {
                 'invalid' => i::__('Inválido')
             ];
         });
+
+        $app->hook('entity(Opportunity).propertiesMetadata', function(&$result) {
+            $result['affirmativePoliciesEligibleFields'] = [
+                'label' => i::__('Campos disponíveis para políticas afirmativas'),
+                'type' => 'array',
+                'isEntityRelation' => false,
+                'isMetadata' => false,
+                'private' => false,
+                'required' => false
+            ];
+        });
+        
+        // Cria a affirmativePoliciesEligibleFields com os campos da fase atual e anterior
+        $app->hook('entity(Opportunity).jsonSerialize', function(&$result) {
+            /** @var Entities\Opportunity $this */
+            if($this->evaluationMethodConfiguration && $this->evaluationMethodConfiguration->definition->slug == 'technical') {
+                $result['affirmativePoliciesEligibleFields'] = $this->getFields();
+            }
+        });
     }
 
     function getValidationErrors(Entities\EvaluationMethodConfiguration $evaluation_method_configuration, array $data){
@@ -389,7 +897,6 @@ class Module extends \MapasCulturais\EvaluationMethod {
             }
         }
 
-
         return $errors;
     }
 
@@ -414,15 +921,13 @@ class Module extends \MapasCulturais\EvaluationMethod {
 
         $num = count($evaluations);
         if($num){
-            $_result = number_format($result / $num, 2);
-            return $this->applyAffirmativePolicies($_result, $registration);
-
+            return number_format($result / $num, 2);
         } else {
             return null;
         }
     }
 
-    public function applyAffirmativePolicies($result, \MapasCulturais\Entities\Registration $registration)
+    public function applyPointReward($result, \MapasCulturais\Entities\Registration $registration)
     {
         $app = App::i();
 
@@ -432,20 +937,19 @@ class Module extends \MapasCulturais\EvaluationMethod {
             $reg->registerFieldsMetadata();
         } while($reg = $reg->previousPhase);
         
-        $affirmativePoliciesConfig = $registration->opportunity->evaluationMethodConfiguration->affirmativePolicies;
-        $affirmativePoliciesRoof = $registration->opportunity->evaluationMethodConfiguration->affirmativePoliciesRoof;
-        $isActiveAffirmativePolicies = filter_var($registration->opportunity->evaluationMethodConfiguration->isActiveAffirmativePolicies, FILTER_VALIDATE_BOOL);
+        $affirmativePoliciesConfig = $registration->opportunity->evaluationMethodConfiguration->pointReward;
+        $pointRewardRoof = $registration->opportunity->evaluationMethodConfiguration->pointRewardRoof;
+        $isActivePointReward = filter_var($registration->opportunity->evaluationMethodConfiguration->isActivePointReward, FILTER_VALIDATE_BOOL);
         $metadata = $registration->getRegisteredMetadata();
-
        
-        if(!$isActiveAffirmativePolicies || empty($affirmativePoliciesConfig)){
+        if(!$isActivePointReward || !array_filter($affirmativePoliciesConfig) || empty($affirmativePoliciesConfig)){
             return $result;
         }
 
         $totalPercent = 0.00;
         $appliedPolicies = [];
         foreach($affirmativePoliciesConfig as $rules){
-            if(empty($metadata)){
+            if(empty($metadata) || empty($rules) || !$rules){
                 continue;
             }
             
@@ -457,9 +961,9 @@ class Module extends \MapasCulturais\EvaluationMethod {
                 continue;
             }
 
-            if(isset($field_conf->config['require']['condition']) && $field_conf->config['require']['condition']){
-                $_field_name = $field_conf->config['require']['field'];
-                if(trim($registration->$_field_name) != trim($field_conf->config['require']['value'])){
+            if($field_conf->conditional){
+                $_field_name = $field_conf->conditionalField;
+                if(trim($registration->$_field_name) != trim($field_conf->conditionalValue)){
                     continue;
                 }
             }
@@ -504,13 +1008,15 @@ class Module extends \MapasCulturais\EvaluationMethod {
             }
         }
         
-        $percentage = (($affirmativePoliciesRoof > 0) && $totalPercent > $affirmativePoliciesRoof) ? $affirmativePoliciesRoof : $totalPercent;
+        $percentage = (($pointRewardRoof > 0) && $totalPercent > $pointRewardRoof) ? $pointRewardRoof : $totalPercent;
 
-        $registration->appliedAffirmativePolicy = [
+        $registration->appliedPointReward = [
             'raw' => $result,
             'percentage' => $percentage,
             'rules' => $appliedPolicies
         ];
+
+        $registration->save(true);
 
         if($percentage > 0){
             return $this->percentCalc($result, $percentage);
@@ -524,6 +1030,45 @@ class Module extends \MapasCulturais\EvaluationMethod {
     {
         return (($value * $percent) /100) + $value;
     }
+
+    /**
+     * @param object $rule
+     * @param Registration $registration
+     * @return boolean
+     */
+    public function qualifiesForQuotaRule(object $rule, Registration $registration): bool
+    {     
+        foreach($rule->fields as $field) {
+            if($field_name = $field->fieldName) {
+                if($val = $registration->$field_name) {
+                    
+                    if(is_array($val) && array_intersect($val, $field->eligibleValues)) {
+                        return true;
+    
+                    } else if(is_object($field->eligibleValues)) {
+                        $eligibleValues = json_decode(json_encode($field->eligibleValues), true);
+
+                        if(array_keys($eligibleValues) !== range(0, count($eligibleValues) - 1)){
+                            return in_array($val, array_keys($eligibleValues)) ? true : false;
+                            
+                        }else {
+                            return in_array($val, $eligibleValues) ? true : false;
+
+                        }
+                    } else if(in_array($val, ["true", "false"])) {
+                        return $val === "true" ? true : false;
+
+                    } else if(in_array($val, $field->eligibleValues)) {
+                        return true;
+
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+    
 
     public function getFieldsAllPhases($entity)
     {
@@ -604,7 +1149,11 @@ class Module extends \MapasCulturais\EvaluationMethod {
 
     function _getConsolidatedDetails(Entities\Registration $registration): array {
         $evaluation_configuration = $registration->opportunity->evaluationMethodConfiguration;
-        
+        $sections =  [];
+        $criteria = [];
+        $max_score = 0;
+        $affirmative_policy = null;
+
         if($evaluations = $registration->sentEvaluations){
             $sections = $evaluation_configuration->sections ?: [];
             $criteria = $evaluation_configuration->criteria ?: [];
@@ -636,8 +1185,8 @@ class Module extends \MapasCulturais\EvaluationMethod {
                 $max_score += $section->maxScore;
             }
     
-            if($affirmative_policy = $registration->appliedAffirmativePolicy){
-                $affirmative_policy->roof = $evaluation_configuration->affirmativePoliciesRoof;
+            if($affirmative_policy = $registration->appliedPointReward){
+                $affirmative_policy->roof = $evaluation_configuration->pointRewardRoof;
             }
             
         }
@@ -645,7 +1194,7 @@ class Module extends \MapasCulturais\EvaluationMethod {
         return [
             'maxScore' => $max_score,
             'scores' => $sections,
-            'appliedAffirmativePolicy' => $affirmative_policy,
+            'appliedPointReward' => $affirmative_policy,
         ];
     }
 
@@ -662,5 +1211,4 @@ class Module extends \MapasCulturais\EvaluationMethod {
 
         return '';
     }
-
 }

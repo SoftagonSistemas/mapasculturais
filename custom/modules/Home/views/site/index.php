@@ -1,10 +1,12 @@
-<?php 
+<?php
+
 /**
  * @var MapasCulturais\App $app
  * @var MapasCulturais\Themes\BaseV2\Theme $this
  */
 
 $this->import('
+    home-developers 
     home-entities 
     home-feature
     home-header 

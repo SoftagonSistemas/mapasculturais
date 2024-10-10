@@ -1,14 +1,11 @@
-FROM hacklab/mapasculturais:7.3.58
+FROM hacklab/mapasculturais:7.5
 
 # Copiando temas e plugins
 COPY themes /var/www/src/themes
 COPY plugins /var/www/src/plugins
 
 # Instalando plugin MultipleLocalAuth
-ENV PLUGIN_MLA_VERSION=3.0.0
-RUN curl -L https://github.com/mapasculturais/plugin-MultipleLocalAuth/archive/refs/tags/v${PLUGIN_MLA_VERSION}.tar.gz | tar -xz -C /var/www/src/plugins/ && \
-    mv /var/www/src/plugins/plugin-MultipleLocalAuth-${PLUGIN_MLA_VERSION}/* /var/www/src/plugins/MultipleLocalAuth/ && \
-    rm -rf /var/www/src/plugins/plugin-MultipleLocalAuth-${PLUGIN_MLA_VERSION}
+COPY plugins/plugin-MultipleLocalAuth-3.0.0 /var/www/src/plugins/MultipleLocalAuth
 
 # Instalando dependências e construindo projeto
 WORKDIR /var/www/src
@@ -22,7 +19,11 @@ COPY docker/common/config.d /var/www/config/common.d
 COPY docker/production/config.d /var/www/config/config.d
 
 # Copiando logo
-COPY img/logo-mapas.png /var/www/src/themes/BaseV2/assets/img/logo-mapas.png
+COPY img/home /var/www/src/themes/BaseV2/assets/img
+COPY img/ /var/www/src/themes/BaseV2/assets/img/
+
+# Confirmação do Google Search Console
+COPY seo/ /var/www/public
 
 # Instalando smtp-relay
 RUN apt update && \
@@ -39,10 +40,12 @@ RUN tar -xz -C /usr/src/ -f /tmp/redis-${REDIS_VERSION}.tar.gz && \
     make install && \
     rm -rf /usr/src/redis-${REDIS_VERSION}
 
-ENV REDIS_CACHE=localhost \
-    REDIS_SESSION_PORT=6380 \
-    SESSIONS_SAVE_PATH=tcp://localhost:$REDIS_SESSION_PORT
+# Definindo variáveis de ambiente separadamente
+ENV REDIS_CACHE=localhost
+ENV REDIS_SESSION_PORT=6380
+ENV SESSIONS_SAVE_PATH=tcp://localhost:${REDIS_SESSION_PORT}
 
+ 
 # Instalando nginx
 RUN apt install nginx -y &&\
     ln -sf /dev/stderr /var/log/nginx/error.log &&\
@@ -55,7 +58,15 @@ COPY docker/production/nginx.conf /etc/nginx/conf.d/default.conf
 COPY custom/modules/Components/components/main-footer/template.php /var/www/src/modules/Components/components/main-footer/template.php
 COPY custom/modules/Home/views/site/index.php /var/www/src/modules/Home/views/site/index.php
 COPY custom/modules/Home/components/home-header/template.php /var/www/src/modules/Home/components/home-header/template.php
+COPY custom/modules/Search/components/search-map/texts.php /var/www/src/modules/Search/components/search-map/texts.php
+COPY custom/modules/Home/components/home-entities/template.php /var/www/src/modules/Home/components/home-entities/template.php
+COPY custom/modules/Entities/components/entity-header/template.php /var/www/src/modules/Entities/components/entity-header/template.php
+COPY custom/modules/Entities/components/entity-header/script.js /var/www/src/modules/Entities/components/entity-header/script.js
 
+COPY config/home-header.php /var/www/config/home-header.php
+COPY config/module.home.php /var/www/config/module.home.php
+COPY config/lgpd.php /var/www/config/lgpd.php
+COPY config/lgpd-terms /var/www/config/lgpd-terms
 
 # Ajustes de permissão e add entrypoint-custom.sh
 COPY docker/custom/entrypoint-custom.sh /tmp/entrypoint-custom.sh

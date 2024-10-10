@@ -16,20 +16,20 @@ $this->import('
     opportunity-phase-config-results
 ');
 ?>
-<mc-stepper-vertical :items="phases" allow-multiple>
+<mc-stepper-vertical class="opportunity-phases-config" :items="phases" allow-multiple>
     <template #header-title="{index, item}">
-        <div class="stepper-header__content">
-            <div class="info">
+        <div class="stepper-header__content opportunity-phases-config__content">
+            <div class="info opportunity-phases-config__info">
                 <h3 v-if="index" class="info__title">{{item.name}}</h3>
                 <h3 v-if="!index" class="info__title"><?= i::__('Período de inscrição') ?></h3>
                 <div v-if="!item.isLastPhase" class="info__type">
                     <span class="title"> <?= i::__('Tipo') ?>: </span>
                     <span v-if="item.__objectType == 'opportunity' && !item.isLastPhase" class="type"><?= i::__('Coleta de dados') ?></span>
-                    <span v-if="item.__objectType == 'evaluationmethodconfiguration'" class="type">{{evaluationTypes[item.type]}}</span>
+                    <span v-if="item.__objectType == 'evaluationmethodconfiguration'" class="type">{{evaluationTypes[item.type.id]}}</span>
                 </div>
             </div>
 
-            <div class="dates">
+            <div class="dates opportunity-phases-config__dates">
                 <div v-if="!item.isLastPhase" class="date">
                     <div class="date__title"> <?= i::__('Data de início') ?> </div>
                     <div v-if="item.registrationFrom" class="date__content">{{item.registrationFrom.date('2-digit year')}} {{item.registrationFrom.time('numeric')}}</div>
@@ -65,7 +65,7 @@ $this->import('
     </template>
     <template #after-li="{index, item}">
         <template v-if="index == phases.length-2">
-            <div v-if="showButtons()" class="add-phase grid-12">
+            <div v-if="showButtons() && entity.registrationFrom && entity.registrationTo" class="add-phase grid-12">
                 <div class="add-phase__evaluation col-12">
                     <opportunity-create-evaluation-phase :opportunity="entity" :previousPhase="item" :lastPhase="phases[index+1]" @create="addInPhases"></opportunity-create-evaluation-phase>
                 </div>
@@ -74,6 +74,10 @@ $this->import('
                     <opportunity-create-data-collect-phase :opportunity="entity" :previousPhase="item" :lastPhase="phases[index+1]" @create="addInPhases"></opportunity-create-data-collect-phase>
                 </div>
             </div>
+            
+            <mc-alert v-if="!entity.registrationFrom && !entity.registrationTo" type="warning">
+                <p><small class="required"><?= i::__("A data e hora da 'Coleta de dados' precisa estar preenchida para adicionar novas fases.") ?></small></p>
+            </mc-alert>
                 
             <div v-if="!showButtons()" class="info-message helper">
                 <mc-icon name="exclamation"></mc-icon>

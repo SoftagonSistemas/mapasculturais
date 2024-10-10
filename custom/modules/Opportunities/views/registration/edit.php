@@ -16,12 +16,13 @@ $this->import('
     mc-icon
     opportunity-header
     registration-actions
+    registration-form
+    request-agent-avatar 
     registration-related-agents
     registration-related-space
     registration-related-project
     registration-steps
     select-entity
-    v1-embed-tool
 ');
 
 $this->useOpportunityAPI();
@@ -46,19 +47,28 @@ $this->breadcrumb = $breadcrumb;
  */
 
  $this->import('
+    entity-field
+    entity-renew-lock
     mc-avatar
     opportunity-header
+    registration-autosave-notification
     registration-info
     registration-steps
 ');
 ?>
 
 <div class="main-app registration edit">
+    <entity-renew-lock :entity="entity"></entity-renew-lock>
     <mc-breadcrumb></mc-breadcrumb>
     <opportunity-header :opportunity="entity.opportunity"></opportunity-header>
 
     <div class="registration__title">
-        <?= i::__('Formulário de inscrição') ?>
+        <h1>
+            <?= i::__('Formulário de inscrição') ?>
+        </h1>
+        <h3>
+            <?= $opportunity->name ?>
+        </h3>
     </div>
 
     <div class="registration__content">
@@ -69,24 +79,46 @@ $this->breadcrumb = $breadcrumb;
         <mc-container>
             <main class="grid-12">
                 <registration-info :registration="entity" classes="col-12"></registration-info>                
+                
                 <section class="section">
-                    <div class="section__title" id="main-info">
+                    <h2 class="section__title" id="main-info">
                         <?= i::__('Informações básicas') ?>
-                    </div>
+                    </h2>
+                    <registration-autosave-notification :registration="entity"></registration-autosave-notification>
+
                     <div class="section__content">                         
                         <div class="card owner">                            
-                            <div class="card__title"> 
-                                <?= i::__('Agente responsável') ?> 
-                            </div>
                             <div class="card__content">
                                 <div class="owner">
-                                    <mc-avatar :entity="entity.owner" size="small"></mc-avatar>
-                                    <div class="owner__name">
-                                        {{entity.owner.name}}
+                                    <mc-avatar v-if="!entity.opportunity.requestAgentAvatar" :entity="entity.owner" size="small"></mc-avatar>
+                                    <request-agent-avatar v-if="entity.opportunity.requestAgentAvatar" :entity="entity"></request-agent-avatar>
+                                    <div class="owner__content">
+                                        <div class="owner__content--title">
+                                            <h3 class="card__title"> 
+                                                <?= i::__('Agente responsável') ?> 
+                                            </h3>
+                                            <div class="owner__name">
+                                                {{entity.owner.name}}
+                                            </div>
+                                        </div>
+                                        <div v-if="entity.opportunity.requestAgentAvatar" class="card__mandatory"> 
+                                            <div class="obrigatory"> <?= i::__('*obrigatório') ?> </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+
+                        <div v-if="entity.opportunity.enableQuotasQuestion" class="card owner">                            
+                            <h3 class="card__title"> 
+                                <?= i::__('Vai concorrer às cotas?') ?> 
+                            </h3>
+
+                            <div class="card__content">
+                                <entity-field :entity="entity" prop="appliedForQuota" :hide-label="true"></entity-field>
+                            </div>
+                        </div>
+
                         <registration-related-agents :registration="entity"></registration-related-agents>
                         <registration-related-space :registration="entity"></registration-related-space>
                         <registration-related-project :registration="entity"></registration-related-project>
@@ -94,7 +126,7 @@ $this->breadcrumb = $breadcrumb;
                 </section>
 
                 <section class="section">
-                    <v1-embed-tool iframe-id="registration-form" route="registrationform" :id="entity.id"></v1-embed-tool>
+                    <registration-form :registration="entity"></registration-form>
                 </section>
             </main>
 
