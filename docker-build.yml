@@ -14,16 +14,21 @@ services:
       - ./docker-data/saas-files:/var/www/var/saas-files
       - ./docker-data/sessions:/var/www/var/sessions
       - ./docker-data/logs:/var/www/var/logs
-      # Adicionar o volume específico para o arquivo template.php
       - ./custom/modules/:/var/www/src/modules/
-  
     links:
       - db
+      - redis
     ports:
-     - 8080:80
-     - 443:443
+      - 8080:80
+      - 443:443
     depends_on:
       - db
+      - redis
+    environment:
+      - REDIS_CACHE=redis
+      - REDIS_SESSION_PORT=6379
+      - SESSIONS_SAVE_PATH=tcp://redis:6379
+
   db:
     image: softagon/mapasculturais-db:latest
     restart: unless-stopped
@@ -33,15 +38,16 @@ services:
       - POSTGRES_DB=mapas
     volumes:
       - ./docker-data/db-data:/var/lib/postgresql/data
-
     ports:
-     - 5433:5432
-## Em ambiente de homologação pode ser uma boa ideia utilizar o mailhog para testar 
-## o envio de emails e também prevenir que emails de tete sejam disparados acidentalmente 
-## para os usuários no caso de o ambiente de homologação utilizar um banco de dados cópia
-## de produção
+      - 5433:5432
 
-  # smtp: 
-  #   image: mailhog/mailhog
-  #   ports:
-  #     - "8025:8025"
+  redis:
+    image: redis:6.2.14
+    restart: unless-stopped
+    ports:
+      - 6379:6379
+    volumes:
+      - redis_data:/data
+
+volumes:
+  redis_data:

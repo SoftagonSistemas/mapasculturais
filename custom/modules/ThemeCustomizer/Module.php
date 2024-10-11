@@ -33,21 +33,21 @@ class Module extends \MapasCulturais\Module
             ];
         });
 
-        $app->hook('mapas.printJsObject:before', function () use($app) {
-            if($app->subsite) {
+        $app->hook('mapas.printJsObject:before', function () use ($app) {
+            if ($app->subsite) {
                 $this->jsObject['subsite'] = $app->subsite;
             } else {
                 $this->subsite = null;
             }
         });
 
-        $app->hook('view.render(<<*>>):before', function () use($app) {
+        $app->hook('view.render(<<*>>):before', function () use ($app) {
             $app->view->enqueueScript('components', 'subsite-init', 'js/subsite-init.js', ['components-utils']);
         });
 
-        $app->hook('app.register:after', function () use($app) {
+        $app->hook('app.register:after', function () use ($app) {
             if ($subsite = $app->subsite) {
-                
+
                 Module::$originalColors = $app->config['logo.colors'];
 
                 if ($subsite->custom_colors) {
@@ -92,7 +92,7 @@ class Module extends \MapasCulturais\Module
 
                 foreach ($css_map as $var) {
                     $color = $subsite->{"color_$var"};
-                    
+
                     if ($color) {
                         $variable_part[] = "
                             \$$var-500: $color !default;
@@ -112,7 +112,7 @@ class Module extends \MapasCulturais\Module
                 if (!empty($variable_part) && !empty($root_part)) {
                     $variable_part = implode("\n", $variable_part);
                     $root_part = implode("\n", $root_part);
-                    
+
                     $saas = "
                         @use 'sass:color';
 
@@ -126,32 +126,31 @@ class Module extends \MapasCulturais\Module
                             $root_part
                         }
                     ";
-                    
-                    $scss_filename = tempnam(sys_get_temp_dir(), 'subsite-').'.scss';
-                    $css_filename = tempnam(sys_get_temp_dir(), 'subsite-').'.css';
-                    
-                    
+
+                    $scss_filename = tempnam(sys_get_temp_dir(), 'subsite-') . '.scss';
+                    $css_filename = tempnam(sys_get_temp_dir(), 'subsite-') . '.css';
+
+
                     file_put_contents($scss_filename, $saas);
                     exec("sass $scss_filename $css_filename --no-source-map");
-                    
+
                     $css = file_get_contents($css_filename);
-                    
+
                     $app->hook('template(<<*>>.body):after', function () use ($css) {
                         echo "
                             <style> $css </style>
                         ";
                     });
                 }
-                if($app->subsite->homeTexts) {
-                    foreach($app->subsite->homeTexts as $slug => $text){
-                        if(!empty($text)){
+                if ($app->subsite->homeTexts) {
+                    foreach ($app->subsite->homeTexts as $slug => $text) {
+                        if (!empty($text)) {
                             $app->config["text:$slug"] = $text;
                         }
                     }
                 }
             }
         });
-
     }
 
     function register()
@@ -162,7 +161,7 @@ class Module extends \MapasCulturais\Module
             $app->registerController('theme-customizer', Controller::class);
         }
 
-        $app->hook('app.register', function(){
+        $app->hook('app.register', function () {
             $this->view->registerMetadata(\MapasCulturais\Entities\Subsite::class, 'custom_colors', [
                 'label' => i::__('Cores'),
                 'type' => 'radio',
@@ -175,12 +174,12 @@ class Module extends \MapasCulturais\Module
 
             // Logo
             $this->view->registerMetadata(\MapasCulturais\Entities\Subsite::class, 'logo_title', [
-                'label' => i::__("Título da logo do Mapas Culturais"),
+                'label' => i::__("Mapa Cultural de Triunfo Pernambuco"),
                 'type' => 'string',
             ]);
 
             $this->view->registerMetadata(\MapasCulturais\Entities\Subsite::class, 'logo_subtitle', [
-                'label' => i::__("Subtítulo da logo do Mapas Culturais"),
+                'label' => i::__("Triunfo Mapas Culturais"),
                 'type' => 'string',
             ]);
 
@@ -265,20 +264,20 @@ class Module extends \MapasCulturais\Module
                 'type' => 'json',
             ]);
 
-            $this->registerFileGroup('subsite', new Definitions\FileGroup('logo',['^image/(jpeg|png)$'], i::__('O arquivo enviado não é uma imagem válida.'), true));
-            $this->registerFileGroup('subsite', new Definitions\FileGroup('background',['^image/(jpeg|png)$'], i::__('O arquivo enviado não é uma imagem válida.'),true));
-            $this->registerFileGroup('subsite', new Definitions\FileGroup('share',['^image/(jpeg|png)$'], i::__('O arquivo enviado não é uma imagem válida.'),true));
-            $this->registerFileGroup('subsite', new Definitions\FileGroup('institute',['^image/(jpeg|png)$'], i::__('O arquivo enviado não é uma imagem válida.'), true));
-            $this->registerFileGroup('subsite', new Definitions\FileGroup('favicon',['^image/(jpeg|png|x-icon|vnd.microsoft.icon)$'], i::__('O arquivo enviado não é uma imagem válida.'), true));
-            
+            $this->registerFileGroup('subsite', new Definitions\FileGroup('logo', ['^image/(jpeg|png)$'], i::__('O arquivo enviado não é uma imagem válida.'), true));
+            $this->registerFileGroup('subsite', new Definitions\FileGroup('background', ['^image/(jpeg|png)$'], i::__('O arquivo enviado não é uma imagem válida.'), true));
+            $this->registerFileGroup('subsite', new Definitions\FileGroup('share', ['^image/(jpeg|png)$'], i::__('O arquivo enviado não é uma imagem válida.'), true));
+            $this->registerFileGroup('subsite', new Definitions\FileGroup('institute', ['^image/(jpeg|png)$'], i::__('O arquivo enviado não é uma imagem válida.'), true));
+            $this->registerFileGroup('subsite', new Definitions\FileGroup('favicon', ['^image/(jpeg|png|x-icon|vnd.microsoft.icon)$'], i::__('O arquivo enviado não é uma imagem válida.'), true));
+
             // Grupos de imagens para customizar
-            $this->registerFileGroup('subsite', new Definitions\FileGroup('opportunityBanner',['^image/(jpeg|png|x-icon|vnd.microsoft.icon)$'], i::__('O arquivo enviado não é uma imagem válida.'), true));
-            $this->registerFileGroup('subsite', new Definitions\FileGroup('eventBanner',['^image/(jpeg|png|x-icon|vnd.microsoft.icon)$'], i::__('O arquivo enviado não é uma imagem válida.'), true));
-            $this->registerFileGroup('subsite', new Definitions\FileGroup('spaceBanner',['^image/(jpeg|png|x-icon|vnd.microsoft.icon)$'], i::__('O arquivo enviado não é uma imagem válida.'), true));
-            $this->registerFileGroup('subsite', new Definitions\FileGroup('agentBanner',['^image/(jpeg|png|x-icon|vnd.microsoft.icon)$'], i::__('O arquivo enviado não é uma imagem válida.'), true));
-            $this->registerFileGroup('subsite', new Definitions\FileGroup('projectBanner',['^image/(jpeg|png|x-icon|vnd.microsoft.icon)$'], i::__('O arquivo enviado não é uma imagem válida.'), true));
-            $this->registerFileGroup('subsite', new Definitions\FileGroup('signupBanner',['^image/(jpeg|png|x-icon|vnd.microsoft.icon)$'], i::__('O arquivo enviado não é uma imagem válida.'), true));
-            $this->registerFileGroup('subsite', new Definitions\FileGroup('header',['^image/(jpeg|png|x-icon|vnd.microsoft.icon)$'], i::__('O arquivo enviado não é uma imagem válida.'), true));
+            $this->registerFileGroup('subsite', new Definitions\FileGroup('opportunityBanner', ['^image/(jpeg|png|x-icon|vnd.microsoft.icon)$'], i::__('O arquivo enviado não é uma imagem válida.'), true));
+            $this->registerFileGroup('subsite', new Definitions\FileGroup('eventBanner', ['^image/(jpeg|png|x-icon|vnd.microsoft.icon)$'], i::__('O arquivo enviado não é uma imagem válida.'), true));
+            $this->registerFileGroup('subsite', new Definitions\FileGroup('spaceBanner', ['^image/(jpeg|png|x-icon|vnd.microsoft.icon)$'], i::__('O arquivo enviado não é uma imagem válida.'), true));
+            $this->registerFileGroup('subsite', new Definitions\FileGroup('agentBanner', ['^image/(jpeg|png|x-icon|vnd.microsoft.icon)$'], i::__('O arquivo enviado não é uma imagem válida.'), true));
+            $this->registerFileGroup('subsite', new Definitions\FileGroup('projectBanner', ['^image/(jpeg|png|x-icon|vnd.microsoft.icon)$'], i::__('O arquivo enviado não é uma imagem válida.'), true));
+            $this->registerFileGroup('subsite', new Definitions\FileGroup('signupBanner', ['^image/(jpeg|png|x-icon|vnd.microsoft.icon)$'], i::__('O arquivo enviado não é uma imagem válida.'), true));
+            $this->registerFileGroup('subsite', new Definitions\FileGroup('header', ['^image/(jpeg|png|x-icon|vnd.microsoft.icon)$'], i::__('O arquivo enviado não é uma imagem válida.'), true));
         });
     }
 }

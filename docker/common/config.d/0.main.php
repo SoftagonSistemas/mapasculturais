@@ -8,6 +8,6 @@ return [
     // Ids dos selos verificadores. Para utilizar múltiplos selos informe os ids separados por vírgula.
     'app.verifiedSealsIds' => '1',
 
-    'footer.supportMessage' => 'Precisa de ajuda? Estamos aqui para você! Envie um e-mail para desenvolvimento@jaboatao.pe.gov.br e nossa equipe terá prazer em ajudar.',
+    'footer.supportMessage' => 'Precisa de ajuda? Estamos aqui para você! Envie um e-mail para triunfoprefeitura@gmail.com e nossa equipe terá prazer em ajudar.',
 
 ];
