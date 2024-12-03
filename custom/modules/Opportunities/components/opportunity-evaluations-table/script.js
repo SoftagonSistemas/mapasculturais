@@ -49,23 +49,23 @@ app.component('opportunity-evaluations-table', {
         filtersDictComplement() {
             let committee = $MAPAS.config.opportunityEvaluationsTable.committee;
             let result = {};
-            for(const item of committee) {
-                result[item.value] = item.label 
-                
+            for (const item of committee) {
+                result[item.value] = item.label
+
             }
 
             return result;
         },
-        headers () {
+        headers() {
             let itens = [
                 { text: __('inscrição', 'opportunity-evaluations-table'), value: "number", slug: "number", sticky: true, width: '160px' },
-                { text: __('avaliador', 'opportunity-evaluations-table'), value: "valuer.name", slug: "evaluator", visible: true},
-                { text: __('resultado final', 'opportunity-evaluations-table'), value: "evaluation.resultString", slug: "result"},
-                { text: __('estado', 'opportunity-evaluations-table'), value: "evaluation.status", slug: "status"},
+                { text: __('avaliador', 'opportunity-evaluations-table'), value: "valuer?.name", slug: "evaluator", visible: true },
+                { text: __('resultado final', 'opportunity-evaluations-table'), value: "evaluation?.resultString", slug: "result" },
+                { text: __('estado', 'opportunity-evaluations-table'), value: "evaluation?.status", slug: "status" },
             ];
 
-            if(this.avaliableEvaluationFields('agentsSummary')) {
-                itens.splice(2, 0, { text: __('agente', 'opportunity-evaluations-table'), value: "owner.name", slug: "agent"});
+            if (this.avaliableEvaluationFields('agentsSummary')) {
+                itens.splice(2, 0, { text: __('agente', 'opportunity-evaluations-table'), value: "owner?.name", slug: "agent" });
             }
 
             return itens;
@@ -96,20 +96,20 @@ app.component('opportunity-evaluations-table', {
             ]
         },
     },
-    
+
     methods: {
         valuersMetadata() {
-            if(this.user != "all") {
+            if (this.user != "all") {
                 return $MAPAS.config.opportunityEvaluationsTable.valuersMetadata[this.user]
             }
 
             return null;
         },
         avaliableEvaluationFields(field) {
-            if(this.phase.opportunity.currentUserPermissions['@control']) {
+            if (this.phase.opportunity.currentUserPermissions['@control']) {
                 return true;
             }
-            
+
             return this.phase.opportunity.avaliableEvaluationFields[field]
         },
         createUrl(entity) {
@@ -119,12 +119,12 @@ app.component('opportunity-evaluations-table', {
             } else if (user === 'all' && entity.evaluation) {
                 user = entity.evaluation?.user;
             }
-            
+
             return Utils.createUrl('registration', 'evaluation', { id: entity._id, user });
         },
         canSee(action) {
             let metadata = this.valuersMetadata();
-            if(metadata && metadata.summary.completed <= 0) {
+            if (metadata && metadata.summary.completed <= 0) {
                 return false
             }
 
@@ -133,7 +133,7 @@ app.component('opportunity-evaluations-table', {
             }
             return false
         },
-        
+
         isFuture() {
             return this.phase.evaluationFrom?.isFuture();
         },
@@ -150,26 +150,25 @@ app.component('opportunity-evaluations-table', {
             const registrationApi = new API('registration');
             const registration = registrationApi.getEntityInstance(rawData.registration.id);
             registration.populate(rawData.registration, true);
-            
+
             let reg = {};
-            reg = {...registration};
+            reg = { ...registration };
 
             reg.evaluation = rawData.evaluation;
             reg.valuer = rawData.valuer;
-
             return reg;
         },
 
         getStatus(status) {
-            switch(status) {
+            switch (status) {
                 case 0:
-                    return  __('Avaliação iniciada', 'opportunity-evaluations-table');
+                    return __('Avaliação iniciada', 'opportunity-evaluations-table');
                 case 1:
-                    return  __('Avaliação concluída', 'opportunity-evaluations-table');
+                    return __('Avaliação concluída', 'opportunity-evaluations-table');
                 case 2:
-                    return  __('Avaliação enviada', 'opportunity-evaluations-table');
+                    return __('Avaliação enviada', 'opportunity-evaluations-table');
                 default:
-                    return  __('Avaliação pendente', 'opportunity-evaluations-table');
+                    return __('Avaliação pendente', 'opportunity-evaluations-table');
             }
         },
 
@@ -202,12 +201,12 @@ app.component('opportunity-evaluations-table', {
         },
 
         dateFormat(date) {
-            let mcdate = new McDate (date);
+            let mcdate = new McDate(date);
             return mcdate.date('2-digit year');
         },
 
         onChange(event, onInput, entities) {
-            if(event instanceof InputEvent) {
+            if (event instanceof InputEvent) {
                 setTimeout(() => onInput(event), 50);
             }
 
@@ -220,7 +219,7 @@ app.component('opportunity-evaluations-table', {
             } else {
                 delete this.query['@date'];
             }
-            
+
             entities.refresh();
         },
 
@@ -248,7 +247,7 @@ app.component('opportunity-evaluations-table', {
                     this.firstDate = null;
                     this.lastDate = null;
                 }
-            
+
                 delete this.query['@date'];
             }
 

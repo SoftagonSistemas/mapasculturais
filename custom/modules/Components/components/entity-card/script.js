@@ -38,7 +38,7 @@ app.component('entity-card', {
 
     computed: {
         classes() {
-            return [this.class, {'portrait': this.portrait}]
+            return [this.class, { 'portrait': this.portrait }]
         },
         showShortDescription() {
             if (this.entity.shortDescription) {
@@ -80,21 +80,21 @@ app.component('entity-card', {
             if (text && text.length > qtdChars) {
                 let slicedText = text.slice(0, qtdChars);
 
-                let _text = text.split(' '); 
+                let _text = text.split(' ');
                 let _slicedText = slicedText.split(' ');
 
                 let _textLastWord = _text[_slicedText.length - 1];
                 let _slicedTextLastWord = _slicedText[_slicedText.length - 1];
 
                 /* se palavra for cortada, remove */
-                if (_slicedTextLastWord  !== _textLastWord ) {
+                if (_slicedTextLastWord !== _textLastWord) {
                     _slicedText.pop();
                     _textLastWord = _slicedText.at(-1);
                 };
 
                 /* verifica pontuações ao final da ultima palavra */
                 let especialChars = ['.', ',', '!', '?'];
-                especialChars.forEach(function(symbol) {
+                especialChars.forEach(function (symbol) {
                     if (typeof _textLastWord == 'string' && _textLastWord.indexOf(symbol) !== -1) {
                         _slicedText[_slicedText.indexOf(_textLastWord)] = _textLastWord.slice(0, -1);
                     };

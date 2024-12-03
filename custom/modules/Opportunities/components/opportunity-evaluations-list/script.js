@@ -41,11 +41,11 @@ app.component('opportunity-evaluations-list', {
             loading: false,
             onlyMe: true,
             filtersOptions: [
-                {label: this.text('all'), value: 'all'},
-                {label: this.text('pending'), value: 'pending'},
-                {label: this.text('started'), value: '0'},
-                {label: this.text('completed'), value: 1},
-                {label: this.text('sent'), value: 2},
+                { label: this.text('all'), value: 'all' },
+                { label: this.text('pending'), value: 'pending' },
+                { label: this.text('started'), value: '0' },
+                { label: this.text('completed'), value: 1 },
+                { label: this.text('sent'), value: 2 },
             ],
             filterStatus: $MAPAS.config.opportunityEvaluationsList?.evaluationStatusFilterCache || 'all'
         }
@@ -57,14 +57,14 @@ app.component('opportunity-evaluations-list', {
         'filterStatus'(_new, _old) {
             this.getEvaluations();
         },
-        'onlyMe' (_new, _old) {
+        'onlyMe'(_new, _old) {
             this.getEvaluations();
         }
     },
     methods: {
         colorByStatus(evaluation) {
             let result = 'pending';
-            
+
             let eval = evaluation ? evaluation.status : null
             switch (eval) {
                 case null:
@@ -100,29 +100,14 @@ app.component('opportunity-evaluations-list', {
             args['@select'] = "id,owner.name";
             args['registration:@select'] = "id,owner.name,sentTimestamp";
             args['@opportunity'] = this.entity.opportunity.id;
-            args['@evaluationId'] = `${this.userEvaluatorId}`
 
-            if(this.keywords){
-                args['registration:@keyword'] = this.keywords;
-            }
 
-            if (this.pending) {
-                args['@pending'] = true;
-            }
-
-            if (this.filterStatus) {
-                args['@filterStatus'] = this.filterStatus;
-            }
-
-            if (this.onlyMe) {
-                args['@onlyMe'] = true;
-            }
 
             api = new API('opportunity');
             let url = api.createApiUrl('findEvaluations', args);
 
             await api.GET(url).then(response => response.json().then(objs => {
-                this.evaluations = objs.map(function(item){
+                this.evaluations = objs.map(function (item) {
                     return {
                         evaluationId: item.evaluation?.id,
                         registrationNumber: item.registration.number,
@@ -137,14 +122,14 @@ app.component('opportunity-evaluations-list', {
                 });
                 this.filterKeyword = false;
                 this.evaluations.sort((a, b) => (a.registrationId - b.registrationId));
-                window.dispatchEvent(new CustomEvent('evaluationRegistrationList', {detail:{evaluationRegistrationList:this.evaluations}}));
+                window.dispatchEvent(new CustomEvent('evaluationRegistrationList', { detail: { evaluationRegistrationList: this.evaluations } }));
 
                 this.loading = false;
             }));
 
             const globalState = useGlobalState();
             globalState.firstRegistration = this.evaluations[0];
-            globalState.lastRegistration = this.evaluations[this.evaluations.length -1];
+            globalState.lastRegistration = this.evaluations[this.evaluations.length - 1];
         },
         previousEvaluation(data) {
             this.goTo(data)
@@ -159,10 +144,10 @@ app.component('opportunity-evaluations-list', {
                     index = data.type === "nextEvaluation" ? i + 1 : i - 1;
                 }
             });
-            
+
             if (index >= 0 && index < this.evaluations.length) {
                 var url = this.evaluations[index].url.href;
-                window.location.href = url +`user:${this.userEvaluatorId}`;
+                window.location.href = url + `user:${this.userEvaluatorId}`;
             }
 
         },
@@ -179,12 +164,12 @@ app.component('opportunity-evaluations-list', {
             }
         },
         toggleMenu() {
-            this.isOpen =  true;
+            this.isOpen = true;
         },
-        showList(){
+        showList() {
             result = true;
-            if(this.roles.forEach(function(item){
-                if(item.toLowerCase().match('admin')){
+            if (this.roles.forEach(function (item) {
+                if (item.toLowerCase().match('admin')) {
                     result = false;
                     return;
                 }
@@ -193,15 +178,15 @@ app.component('opportunity-evaluations-list', {
         },
         verifyState(evaluation) {
             switch (evaluation.resultString) {
-                case 'Selecionado' :
-                case 'Válida' :
+                case 'Selecionado':
+                case 'Válida':
                     return 'success__color';
-                    
-                case 'Inválida' : 
-                case 'Não selecionado' : 
+
+                case 'Inválida':
+                case 'Não selecionado':
 
                     return 'danger__color';
-                case 'Suplente' :
+                case 'Suplente':
                     return 'warning__color';
 
                 case null:

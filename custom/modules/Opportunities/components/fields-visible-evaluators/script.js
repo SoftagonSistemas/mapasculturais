@@ -63,9 +63,8 @@ app.component("fields-visible-evaluators", {
 
         fieldSkeleton() {
             let _fields = [];
-
-            if($MAPAS?.config?.fieldsToEvaluate.length > 0){
-                $MAPAS?.config?.fieldsToEvaluate.forEach(item =>{
+            if($MAPAS?.config?.fieldsVisibleEvaluators[this.entity.opportunity.id]?.length > 0){
+                $MAPAS?.config?.fieldsVisibleEvaluators[this.entity.opportunity.id].forEach(item =>{
                     _fields.push(item);
                 })
             }
@@ -77,6 +76,8 @@ app.component("fields-visible-evaluators", {
                 fields.push(item);
             }
 
+            fields = fields.sort((a,b) => a.displayOrder - b.displayOrder)
+
             return fields;
         },
         getFields() {
@@ -84,8 +85,7 @@ app.component("fields-visible-evaluators", {
 
             _fields = Object.values(this.fields).map((item, index) => {
                 let field = { ...this.fields[index] }
-
-                field.checked = avaliableFields[item.fieldName] == "true" ? true : false;
+                field.checked = avaliableFields[item.fieldName || item.groupName] == "true" ? true : false;
 
                 if (avaliableFields["category"] && item.categories?.length > 0) {
                     field.disabled = (avaliableFields["category"] == "true" ? false : true);
@@ -102,7 +102,7 @@ app.component("fields-visible-evaluators", {
 
                 if (!field.checked) {
                     this.fields.forEach((_item, pos) => {
-                        if (_item.conditionalField == field.fieldName) {
+                        if (_item.conditionalField &&  _item.conditionalField == field.fieldName) {
                             this.avaliableEvaluationFields[_item.fieldName] = false;
                             this.entity.opportunity.avaliableEvaluationFields[_item.fieldName] = "false"
                         }
@@ -118,11 +118,13 @@ app.component("fields-visible-evaluators", {
         },
         toggleSelectAll() {
             this.fields.forEach((field) => {
-                let conditionalField = this.avaliableEvaluationFields[field.conditionalField];
+                let conditionalField = this.avaliableEvaluationFields[field.conditionalField] || this.fields.filter((conditionalField) => conditionalField.fieldName == field.conditionalField);
+                let fieldName = field.fieldName || field.groupName; 
+                
                 if (this.selectAll) {
                     if (!field.checked) {
                         field.checked = true;
-                        this.avaliableEvaluationFields[field.fieldName] = "true";
+                        this.avaliableEvaluationFields[fieldName] = "true";
 
                         if (field.conditional) {
                             field.disabled = conditionalField.checked ? true : false;
@@ -131,7 +133,7 @@ app.component("fields-visible-evaluators", {
                 } else {
                     if (field.checked) {
                         field.checked = false;
-                        this.avaliableEvaluationFields[field.fieldName] = "false";
+                        this.avaliableEvaluationFields[fieldName] = "false";
 
                         if (field.conditional) {
                             field.disabled = conditionalField.checked ? false : true;
@@ -144,6 +146,10 @@ app.component("fields-visible-evaluators", {
         },
 
         toggleSelect(fieldName) {
+            if(Array.isArray(this.entity.opportunity.avaliableEvaluationFields) && this.entity.opportunity.avaliableEvaluationFields.length == 0) {
+                this.entity.opportunity.avaliableEvaluationFields = {};
+            }
+
             this.entity.opportunity.avaliableEvaluationFields[fieldName] = this.avaliableEvaluationFields[fieldName] ? "true" : "false";
             this.save();
             this.getFields();

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @var MapasCulturais\App $app
  * @var MapasCulturais\Themes\BaseV2\Theme $this
@@ -17,9 +18,9 @@ $this->import('
         <mc-alert v-if="!entity.opportunity.publishedRegistrations" class="col-12" type="helper">
             <?= i::__('Após a finalização das avaliações, você precisa acessar a <strong>lista de inscrições para aplicar os resultados dessas avaliações</strong>.') ?>
         </mc-alert>
-        
+
         <div class="col-6 opportunity-phase-list-evaluation_action--center">
-           <div class="col-6 opportunity-phase-list-evaluation_action__box">
+            <div class="col-6 opportunity-phase-list-evaluation_action__box">
                 <div class="opportunity-phase-list-evaluation__status col-6">
                     <h4 class="bold"><?php i::_e("Resumo das inscrições") ?></h4>
                     <div v-if="entity.opportunity.summary?.registrations">
@@ -38,8 +39,8 @@ $this->import('
                     <div v-if="entity.opportunity.summary?.registrations && entity.isFirstPhase">
                         <?= i::__("Não existem inscrições cadastradas") ?>
                     </div>
-                            
-                </div>   
+
+                </div>
                 <div class="col-6 opportunity-phase-list-evaluation__cardfooter">
                     <div>
                         <mc-link :entity="entity.opportunity" class="opportunity-phase-list-evaluation_buttonbox button button--primary button--icon " :class="{'disabled': !entity.opportunity.summary?.registrations}" icon="external" route="registrations" right-icon>
@@ -47,22 +48,22 @@ $this->import('
                         </mc-link>
                     </div>
                     <div>
-                        <button v-if="!entity.isFirstPhase" class="button button--primary" @click="sync(entity.opportunity)" title="<?= i::__("Sincronizar inscrições") ?>"><mc-icon name="sync" ></mc-icon></button>
+                        <button v-if="!entity.isFirstPhase" class="button button--primary" @click="sync(entity.opportunity)" title="<?= i::__("Sincronizar inscrições") ?>"><mc-icon name="sync"></mc-icon></button>
                     </div>
                 </div>
             </div>
         </div>
-        <div v-if="showEvaluateSummary()" class="col-6 opportunity-phase-list-evaluation_action--center">
-           <div class="col-6 opportunity-phase-list-evaluation_action__box">
+        <div class="col-6 opportunity-phase-list-evaluation_action--center">
+            <div class="col-6 opportunity-phase-list-evaluation_action__box">
                 <div class="opportunity-phase-list-evaluation__status col-6">
-                        <h4 class="bold"><?php i::_e("Resumo das avaliações") ?></h4>
-                        <p v-for="(value, label) in entity.summary.evaluations"><?= i::__("Quantidade de inscrições") ?> <strong>{{label.toLowerCase()}}</strong>: <strong>{{value}}</strong> <?php i::_e('inscrições') ?></p>
+                    <h4 class="bold"><?php i::_e("Resumo das avaliações") ?></h4>
+                    <p v-for="(value, label) in entity.summary.evaluations"><?= i::__("Quantidade de inscrições") ?> <strong>{{label.toLowerCase()}}</strong>: <strong>{{value}}</strong> <?php i::_e('inscrições') ?></p>
                 </div>
                 <div class="col-6 opportunity-phase-list-evaluation__cardfooter">
                     <mc-link route="opportunity/allEvaluations" :params="[entity.opportunity.id, 'all']" class="opportunity-phase-list-evaluation_buttonbox button button--primary button--icon " icon="external" right-icon>
-                    <h4 class="semibold"><?= i::__("Lista de avaliações") ?></h4>
+                        <h4 class="semibold"><?= i::__("Lista de avaliações") ?></h4>
                     </mc-link>
-                </div>    
+                </div>
             </div>
         </div>
         <div class="opportunity-phase-list-evaluation__line col-12"></div>

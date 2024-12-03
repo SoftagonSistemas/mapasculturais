@@ -52,7 +52,6 @@ $entity = $this->controller->requestedEntity;
                         <h4 class="bold"><?= i::__('Ações:') ?></h4>
                         <div class="opportunity-registration-table__actions-buttons">
                         <?php $this->applyTemplateHook('registration-list-actions-entity-table', 'begin', ['entity' => $entity]); ?>
-                            <mc-link :entity="phase" route="reportDrafts" class="button button--primarylight button--icon"><?= i::__("Baixar rascunhos") ?> <mc-icon name="download"></mc-icon></mc-link>
                             <mc-export-spreadsheet :owner="phase" endpoint="registrations" :params="{entityType: 'registration', '@select': select, '@order': order, query}" group="registrations-spreadsheets"></mc-export-spreadsheet>
                         <?php $this->applyTemplateHook('registration-list-actions-entity-table', 'end', ['entity' => $entity]); ?>
                         </div>
@@ -123,8 +122,14 @@ $entity = $this->controller->requestedEntity;
                     </template>
                 </template>
 
+                <template #usingQuota="{entity}"> 
+                    <div style="white-space: pre-line;">
+                        {{entity.usingQuota}}
+                    </div>
+                </template>
+
                 <template #quotas="{entity}"> 
-                    <div v-if="entity.quotas.length > 0" v-for="quota in entity.quotas">
+                    <div v-if="entity.quotas?.length > 0" v-for="quota in entity.quotas">
                         {{quota}}
                     </div>
                     <span v-else>&nbsp;</span>

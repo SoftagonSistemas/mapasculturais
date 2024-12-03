@@ -23,14 +23,27 @@ app.component('opportunity-registrations-table', {
     },
     setup() {
         // os textos estão localizados no arquivo texts.php deste componente
+        const messages = useMessages();
         const text = Utils.getTexts('opportunity-registrations-table');
 
-
-        /* adiciona a definição de quotas, tiebreaker e region, 
-           que são retornados pela api mas nào são metadados, 
-           possibilitando a utilização na tabela */
+        /* 
+            adiciona a definição de quotas, tiebreaker e region, 
+            que são retornados pela api mas nào são metadados, 
+            possibilitando a utilização na tabela 
+        */
 
         $DESCRIPTIONS.registration['quotas'] = {
+            isMetadata: false,
+            isEntityRelation: false,
+            required: false,
+            readonly: true,
+            type: "array",
+            length: 255,
+            label: 'Elegível para as cotas',
+            isPK: false
+        };
+
+        $DESCRIPTIONS.registration['usingQuota'] = {
             isMetadata: false,
             isEntityRelation: false,
             required: false,
@@ -63,7 +76,7 @@ app.component('opportunity-registrations-table', {
             isPK: false
         };
 
-        return { text }
+        return { messages, text }
     },
     data() {
         const $DESC = $DESCRIPTIONS.registration;
@@ -72,12 +85,12 @@ app.component('opportunity-registrations-table', {
         const isAffirmativePoliciesActive = $MAPAS.config.opportunityRegistrationTable.isAffirmativePoliciesActive;
         const hadTechnicalEvaluationPhase = $MAPAS.config.opportunityRegistrationTable.hadTechnicalEvaluationPhase;
         const isTechnicalEvaluationPhase = $MAPAS.config.opportunityRegistrationTable.isTechnicalEvaluationPhase;
-        
+
         let visible = this.visibleColumns.join(',');
-        let order = 'score DESC';
+        let order = 'status DESC,consolidatedResult DESC';
         let consolidatedResultOrder = 'consolidatedResult';
-        
-        if(this.phase.registrationCategories?.length > 0) {
+
+        if (this.phase.registrationCategories?.length > 0) {
             avaliableFields.push({
                 title: $DESC.category.label,
                 fieldName: 'category',
@@ -85,7 +98,7 @@ app.component('opportunity-registrations-table', {
             });
         }
 
-        if(this.phase.registrationProponentTypes?.length > 0) {
+        if (this.phase.registrationProponentTypes?.length > 0) {
             avaliableFields.push({
                 title: $DESC.proponentType.label,
                 fieldName: 'proponentType',
@@ -93,7 +106,7 @@ app.component('opportunity-registrations-table', {
             });
         }
 
-        if(this.phase.registrationRanges?.length > 0) {
+        if (this.phase.registrationRanges?.length > 0) {
             avaliableFields.push({
                 title: $DESC.range.label,
                 fieldName: 'range',
@@ -103,13 +116,13 @@ app.component('opportunity-registrations-table', {
 
         const fieldTypes = ['select', 'boolean', 'checkbox', 'multiselect', 'checkboxes', 'agent-owner-field', 'agent-collective-field'];
 
-        for(let key of Object.keys($DESC)) {
+        for (let key of Object.keys($DESC)) {
             const field = $DESC[key];
 
-            if(key.startsWith('field_') && fieldTypes.indexOf(field.field_type) >= 0) {
-                if(field.field_type == 'agent-owner-field' || field.field_type == 'agent-collective-field') {
+            if (key.startsWith('field_') && fieldTypes.indexOf(field.field_type) >= 0) {
+                if (field.field_type == 'agent-owner-field' || field.field_type == 'agent-collective-field') {
                     const angentFieldDescription = $DESCRIPTIONS.agent[field.registrationFieldConfiguration?.config?.entityField];
-                    if(angentFieldDescription) {
+                    if (angentFieldDescription) {
                         avaliableFields.push(field.registrationFieldConfiguration);
                     }
                 } else {
@@ -118,48 +131,50 @@ app.component('opportunity-registrations-table', {
             }
         }
 
-        if(isTechnicalEvaluationPhase){
+        if (isTechnicalEvaluationPhase) {
             consolidatedResultOrder = 'consolidatedResult AS FLOAT';
         }
 
         const sortOptions = [
-            { value: 'sentTimestamp ASC', label: 'enviadas a mais tempo primeiro' },
-            { value: 'sentTimestamp DESC', label: 'enviadas a menos tempo primeiro' },
+            { value: 'sentTimestamp ASC', label: this.text('enviadas a mais tempo primeiro') },
+            { value: 'sentTimestamp DESC', label: this.text('enviadas a menos tempo primeiro') },
         ];
 
-        if(this.phase.isLastPhase) {
+        if (this.phase.isLastPhase) {
             order = `status DESC,score DESC`;
-            sortOptions.splice(0, 0, {value: 'score DESC', label: 'pontuação final'});
-            sortOptions.splice(0, 0, { value: `status ASC,score ASC`, label: 'por status ascendente' });
-            sortOptions.splice(0, 0, { value: `status DESC,score DESC`, label: 'por status descendente' });
+            sortOptions.splice(0, 0, { value: 'score DESC,status DESC', label: this.text('pontuação final') });
+            sortOptions.splice(0, 0, { value: `status ASC,score ASC`, label: this.text('status ascendente') });
+            sortOptions.splice(0, 0, { value: `status DESC,score DESC`, label: this.text('status descendente') });
 
-        } else { 
-            sortOptions.splice(0, 0, { value: `${consolidatedResultOrder} DESC`, label: 'resultado das avaliações' });
-            sortOptions.splice(0, 0, { value: `status ASC,${consolidatedResultOrder} ASC`, label: 'por status ascendente' });
-            sortOptions.splice(0, 0, { value: `status DESC,${consolidatedResultOrder} DESC`, label: 'por status descendente' });
+        } else {
+            sortOptions.splice(0, 0, { value: `${consolidatedResultOrder} DESC`, label: this.text('resultado das avaliações') });
+            sortOptions.splice(0, 0, { value: `status ASC,${consolidatedResultOrder} ASC`, label: this.text('status ascendente') });
+            sortOptions.splice(0, 0, { value: `status DESC,${consolidatedResultOrder} DESC`, label: this.text('status descendente') });
 
-            if(hadTechnicalEvaluationPhase) {
-                order = 'score DESC';
-                sortOptions.splice(0, 0, {value: 'score DESC', label: 'pontuação final'});
+            if (hadTechnicalEvaluationPhase) {
+                order = 'score DESC,status DESC';
+                sortOptions.splice(0, 0, { value: 'score DESC', label: this.text('pontuação final') });
             }
-            
-            if(isAffirmativePoliciesActive) {
-                avaliableFields.splice(0,0, {
+
+            if (isAffirmativePoliciesActive) {
+                avaliableFields.splice(0, 0, {
                     title: __('concorrendo por cota', 'opportunity-registrations-table'),
                     fieldName: 'eligible',
                     fieldType: 'boolean'
                 });
 
                 visible += ',eligible';
-                order = '@quota';
-                sortOptions.splice(0, 0, {value: '@quota', label: 'classificação final'});
+                if (isTechnicalEvaluationPhase) {
+                    order = '@quota';
+                    sortOptions.splice(0, 0, { value: '@quota', label: this.text('classificação final') });
+                }
             }
         }
 
         return {
             sortOptions,
             filters: {},
-            resultStatus:[],
+            resultStatus: [],
             query: {
                 '@opportunity': this.phase.id,
                 'status': 'GTE(0)',
@@ -169,7 +184,7 @@ app.component('opportunity-registrations-table', {
             selectedProponentTypes: [],
             selectedRanges: [],
             selectedStatus: [],
-            selectedAvaliation:null,
+            selectedAvaliation: null,
             order,
             avaliableFields,
             visible,
@@ -183,21 +198,21 @@ app.component('opportunity-registrations-table', {
         statusDict() {
             return $MAPAS.config.opportunityRegistrationTable.registrationStatusDict;
         },
-        statusEvaluation () {
+        statusEvaluation() {
             return $MAPAS.config.opportunityRegistrationTable.evaluationStatusDict;
         },
-        statusEvaluationResult () {
+        statusEvaluationResult() {
             let evaluationType = this.phase.evaluationMethodConfiguration ? this.phase.evaluationMethodConfiguration.type : null;
             return evaluationType ? this.statusEvaluation[evaluationType] : null;
         },
-        status () {
+        status() {
             const result = {};
             for (let status of this.statusDict) {
                 result[status.value] = status.label;
             }
             return result;
         },
-        categories (){
+        categories() {
             if (this.phase.registrationCategories && this.phase.registrationCategories.length > 0) {
                 const result = {};
                 for (let category of this.phase.registrationCategories) {
@@ -207,7 +222,7 @@ app.component('opportunity-registrations-table', {
             }
             return null;
         },
-        proponentTypes (){
+        proponentTypes() {
             if (this.phase.registrationProponentTypes && this.phase.registrationProponentTypes.length > 0) {
                 const result = {};
                 for (let proponentType of this.phase.registrationProponentTypes) {
@@ -217,7 +232,7 @@ app.component('opportunity-registrations-table', {
             }
             return null;
         },
-        ranges (){
+        ranges() {
             if (this.phase.registrationRanges && this.phase.registrationRanges.length > 0) {
                 const result = {};
                 for (let range of this.phase.registrationRanges) {
@@ -227,42 +242,47 @@ app.component('opportunity-registrations-table', {
             }
             return null;
         },
-        headers () {
+        headers() {
             let itens = [
                 { text: __('inscrição', 'opportunity-registrations-table'), value: "number", sticky: true, width: '160px' },
-                { text: __('agente', 'opportunity-registrations-table'), value: "owner.name", slug: "agent"},
-                ...this.avaliableFields.map((item) => { return {text: item.title, value: item.fieldName} }),
+                { text: __('agente', 'opportunity-registrations-table'), value: "owner?.name", slug: "agent" },
+                ...this.avaliableFields.map((item) => { return { text: item.title, value: item.fieldName } }),
                 { text: __('anexos', 'opportunity-registrations-table'), value: "attachments" },
                 { text: __('data de criação', 'opportunity-registrations-table'), value: "createTimestamp" },
                 { text: __('data de envio', 'opportunity-registrations-table'), value: "sentTimestamp" },
-                { text: __('Editavel para o proponente', 'opportunity-registrations-table'), slug: "editable"}
+                { text: __('Editavel para o proponente', 'opportunity-registrations-table'), slug: "editable" }
             ];
 
-            if(this.phase.evaluationMethodConfiguration){
-                itens.splice(2,0,{ text: "Avaliação", value: "consolidatedResult"});
+            if (this.phase.evaluationMethodConfiguration) {
+                itens.splice(2, 0, { text: "Avaliação", value: "consolidatedResult" });
 
-                if(this.isTechnicalEvaluationPhase) {
+                if (this.isTechnicalEvaluationPhase) {
                     const evaluationMethodConfiguration = this.phase.evaluationMethodConfiguration || {};
                     const tiebreakerConfiguration = evaluationMethodConfiguration.tiebreakerCriteriaConfiguration || [];
                     const quotaConfiguration = evaluationMethodConfiguration.quotaConfiguration || {};
                     const geoQuotaConfiguration = evaluationMethodConfiguration.geoQuotaConfiguration || {};
-                    
-                    if(tiebreakerConfiguration?.length > 0) {
-                        itens.splice(3,0,{
+
+                    if (tiebreakerConfiguration?.length > 0) {
+                        itens.splice(3, 0, {
                             text: __('Critérios de desempate', 'opportunity-registrations-table'),
                             value: 'tiebreaker',
                         });
                     }
-        
-                    if(quotaConfiguration.rules?.length > 0) {
-                        itens.splice(5,0,{
-                            text: __('Cotas aplicadas', 'opportunity-registrations-table'),
+
+                    if (quotaConfiguration.rules?.length > 0) {
+                        itens.splice(5, 0, {
+                            text: __('Elegível para cotas', 'opportunity-registrations-table'),
                             value: 'quotas',
                         });
+
+                        itens.splice(6, 0, {
+                            text: __('Cotas aplicadas', 'opportunity-registrations-table'),
+                            value: 'usingQuota',
+                        });
                     }
-        
-                    if(geoQuotaConfiguration?.geoDivision) {
-                        itens.splice(6,0,{
+
+                    if (geoQuotaConfiguration?.geoDivision) {
+                        itens.splice(7, 0, {
                             text: __('Região', 'opportunity-registrations-table'),
                             value: 'region',
                         });
@@ -270,16 +290,16 @@ app.component('opportunity-registrations-table', {
                 }
             }
 
-            if(this.phase.isLastPhase){
-                itens.splice(2,0,{ text: "Status", value: "consolidatedResult"});
-                itens.push({ text: __('resultado final', 'opportunity-registrations-table'), value: "status", width: '250px', stickyRight: true})
+            if (this.phase.isLastPhase) {
+                itens.splice(2, 0, { text: "Status", value: "consolidatedResult" });
+                itens.push({ text: __('resultado final', 'opportunity-registrations-table'), value: "status", width: '250px', stickyRight: true })
             } else {
-                itens.push({ text: __('status', 'opportunity-registrations-table'), value: "status", width: '250px', stickyRight: true})
+                itens.push({ text: __('status', 'opportunity-registrations-table'), value: "status", width: '250px', stickyRight: true })
             }
 
-            itens.splice(3,0,{ text: "Pontuação", value: "score"});
+            itens.splice(3, 0, { text: "Pontuação", value: "score" });
 
-            if(this.avaliableColumns) {
+            if (this.avaliableColumns) {
                 itens = itens.filter((item) => {
                     return this.avaliableColumns.indexOf(item.value) >= 0;
                 });
@@ -290,7 +310,7 @@ app.component('opportunity-registrations-table', {
         },
         select() {
             const fields = this.avaliableFields.map((item) => item.fieldName);
-            
+
             return ['number,consolidatedResult,score,status,sentTimestamp,createTimestamp,files,owner.{name,geoMesoregiao},editSentTimestamp,editableUntil,editableFields', ...fields].join(',');
         },
         previousPhase() {
@@ -306,8 +326,15 @@ app.component('opportunity-registrations-table', {
         },
 
         setStatus(selected, entity) {
-            entity.status = selected.value;
-            entity.save();
+            const api = new API();
+            const url = Utils.createUrl('registration', 'setStatusTo', { id: entity.id });
+            api.POST(url, { status: selected.value }).then(res => res.json()).then(response => {
+                if (response.error) {
+                    this.messages.error(this.text(response.data))
+                } else {
+                    this.messages.success(this.text('status alterado com sucesso'))
+                }
+            });
         },
 
         clearFilters(entities) {
@@ -349,7 +376,7 @@ app.component('opportunity-registrations-table', {
             }
             entities.refresh();
         },
-        
+
         filterByCategories(entities) {
             if (this.selectedCategories.length > 0) {
                 this.query['category'] = `IN(${this.selectedCategories.toString()})`;
@@ -367,7 +394,7 @@ app.component('opportunity-registrations-table', {
             }
             entities.refresh();
         },
-        
+
         filterByRanges(entities) {
             if (this.selectedRanges.length > 0) {
                 this.query['range'] = `IN(${this.selectedRanges.toString()})`;
@@ -377,7 +404,7 @@ app.component('opportunity-registrations-table', {
             entities.refresh();
         },
 
-        filterAvaliation(option,entities){
+        filterAvaliation(option, entities) {
             this.selectedAvaliation = option.value;
             if (this.selectedAvaliation.length > 0) {
                 this.query['consolidatedResult'] = `IN(${this.selectedAvaliation.toString()})`;
@@ -385,15 +412,15 @@ app.component('opportunity-registrations-table', {
                 delete this.query['consolidatedResult'];
             }
             entities.refresh();
-            
+
         },
 
         consolidatedResultToString(entity) {
-            if(this.phase.evaluationMethodConfiguration){
+            if (this.phase.evaluationMethodConfiguration) {
                 let type = this.phase.evaluationMethodConfiguration.type.id || this.phase.evaluationMethodConfiguration.type;
-                if(type == "technical"){
+                if (type == "technical") {
                     return entity.consolidatedResult;
-                }else{
+                } else {
                     return this.statusEvaluation[type][entity.consolidatedResult];
                 }
             } else if (this.phase.isLastPhase) {
@@ -401,7 +428,7 @@ app.component('opportunity-registrations-table', {
             }
             return "";
         },
-        
+
         statusToString(status) {
             return this.text(status)
         },
@@ -436,11 +463,11 @@ app.component('opportunity-registrations-table', {
             let editableUntil = registration.editableUntil ?? null;
             let editSentTimestamp = registration.editSentTimestamp ?? null;
 
-            if(this.phase.registrationTo?.isFuture() && registration.status === 0) {
+            if (this.phase.registrationTo?.isFuture() && registration.status === 0) {
                 return false;
             }
 
-            if(this.phase.registrationTo?.isPast() && registration.status === 0) {
+            if (this.phase.registrationTo?.isPast() && registration.status === 0) {
                 return 'notEditable';
             }
 

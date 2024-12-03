@@ -10,7 +10,7 @@ app.component('evaluation-card', {
             type: String,
         },
     },
-    
+
     setup(props, { slots }) {
         const hasSlot = name => !!slots[name];
         const text = Utils.getTexts('evaluation-card');
@@ -19,6 +19,11 @@ app.component('evaluation-card', {
 
     computed: {
         dateFrom() {
+            console.log('Debug dateFrom:', this.entity);
+            if (!this.entity || !this.entity.registrationFrom) {
+                console.warn('registrationFrom is null or undefined');
+                return null;
+            }
             if (this.entity.registrationFrom instanceof McDate) {
                 return this.entity.registrationFrom;
             } else {
@@ -27,6 +32,11 @@ app.component('evaluation-card', {
         },
 
         dateTo() {
+            console.log('Debug dateTo:', this.entity);
+            if (!this.entity || !this.entity.registrationTo) {
+                console.warn('registrationTo is null or undefined');
+                return null;
+            }
             if (this.entity.registrationTo instanceof McDate) {
                 return this.entity.registrationTo;
             } else {

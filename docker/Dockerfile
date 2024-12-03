@@ -1,4 +1,6 @@
-FROM hacklab/mapasculturais:7.5
+# docker build -t mapacultural:latest -f docker/Dockerfile .
+
+FROM hacklab/mapasculturais:latest
 
 # Copiando temas e plugins
 COPY themes /var/www/src/themes
@@ -48,6 +50,8 @@ COPY custom/modules/Search/components/search-map/texts.php /var/www/src/modules/
 COPY custom/modules/Home/components/home-entities/template.php /var/www/src/modules/Home/components/home-entities/template.php
 COPY custom/modules/Entities/components/entity-header/template.php /var/www/src/modules/Entities/components/entity-header/template.php
 COPY custom/modules/Entities/components/entity-header/script.js /var/www/src/modules/Entities/components/entity-header/script.js
+
+COPY custom/modules/Opportunities/ /var/www/src/modules/Opportunities/
 
 COPY config/home-header.php /var/www/config/home-header.php
 COPY config/module.home.php /var/www/config/module.home.php
