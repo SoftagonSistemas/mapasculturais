@@ -100,12 +100,27 @@ app.component('opportunity-evaluations-list', {
             args['@select'] = "id,owner.name";
             args['registration:@select'] = "id,owner.name,sentTimestamp";
             args['@opportunity'] = this.entity.opportunity.id;
+            args['@evaluationId'] = `${this.userEvaluatorId}`
 
+            if (this.keywords) {
+                args['registration:@keyword'] = this.keywords;
+            }
 
+            if (this.pending) {
+                args['@pending'] = true;
+            }
+
+            if (this.filterStatus) {
+                args['@filterStatus'] = this.filterStatus;
+            }
+
+            if (this.onlyMe) {
+                args['@onlyMe'] = true;
+            }
 
             api = new API('opportunity');
             let url = api.createApiUrl('findEvaluations', args);
-
+            console.log('URL foi aqui', url)
             await api.GET(url).then(response => response.json().then(objs => {
                 this.evaluations = objs.map(function (item) {
                     return {

@@ -22,7 +22,7 @@ $this->import('
         <div class="col-6 opportunity-phase-list-evaluation_action--center">
             <div class="col-6 opportunity-phase-list-evaluation_action__box">
                 <div class="opportunity-phase-list-evaluation__status col-6">
-                    <h4 class="bold"><?php i::_e("Resumo das inscrições") ?></h4>
+                    <h4 class="bold"> <?php i::_e("Resumo das inscrições") ?></h4>
                     <div v-if="entity.opportunity.summary?.registrations">
                         <p v-if="entity.opportunity.summary?.registrations"><?= i::__("Quantidade inscrições:") ?> <strong>{{entity.opportunity.summary?.registrations}}</strong> <?php i::_e('inscrições') ?></p>
                         <p v-if="entity.opportunity.summary?.evaluated"><?= i::__("Quantidade de inscrições <strong>avaliadas</strong>:") ?> <strong>{{entity.opportunity.summary?.evaluated}}</strong> <?php i::_e('inscrições') ?></p>

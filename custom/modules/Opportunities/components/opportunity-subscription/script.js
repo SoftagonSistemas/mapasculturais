@@ -1,4 +1,4 @@
-app.component('opportunity-subscription', {
+app.component('opportunity-subscription' , {
     template: $TEMPLATES['opportunity-subscription'],
 
     props: {
@@ -16,14 +16,14 @@ app.component('opportunity-subscription', {
                 const entity = new Entity('agent', agent.id);
                 entity.populate(agent);
                 return entity;
-            }
+            }             
         });
 
         const text = Utils.getTexts('opportunity-subscription')
         return { text }
     },
 
-    data() {
+    data () {
         let agent = null;
         let phases = null;
 
@@ -31,9 +31,9 @@ app.component('opportunity-subscription', {
             agent = $MAPAS.config.opportunitySubscription.agents[0];
         }
 
-        if ($MAPAS.opportunityPhases && $MAPAS.opportunityPhases.length > 0) {
+        if($MAPAS.opportunityPhases && $MAPAS.opportunityPhases.length > 0) {
             phases = $MAPAS.opportunityPhases;
-        }
+        } 
 
         return {
             agent,
@@ -41,8 +41,8 @@ app.component('opportunity-subscription', {
             registrationRange: null,
             registrationProponentType: null,
             categories: this.entity.registrationCategories || [],
-            dateStart: this.entity ? this.entity.registrationFrom : null,
-            dateEnd: this.entity ? this.entity.registrationTo : null,
+            dateStart: this.entity.registrationFrom, 
+            dateEnd: this.entity.registrationTo,
             entities: {},
             entitiesLength: $MAPAS.config.opportunitySubscription.agents.length,
             processing: false,
@@ -57,9 +57,9 @@ app.component('opportunity-subscription', {
     computed: {
         numberFields() {
             return [
-                this.entitiesLength > 1,
-                this.categories.length,
-                this.registrationRanges.length,
+                this.entitiesLength > 1, 
+                this.categories.length, 
+                this.registrationRanges.length, 
                 this.registrationProponentTypes.length
             ].filter(i => i).length;
         },
@@ -99,10 +99,10 @@ app.component('opportunity-subscription', {
         },
 
         isOpen() {
-            if (this.entity.currentUserPermissions["@control"]) {
+            if (this.entity.currentUserPermissions["@control"]){
                 return true;
             }
-
+            
             if (this.registrationStatus(this.dateStart, this.dateEnd) == 'open') {
                 return true;
             } else {
@@ -141,7 +141,7 @@ app.component('opportunity-subscription', {
         endHour() {
             return this.dateEnd?.time();
         },
-        lastPhase() {
+        lastPhase () {
             const phase = this.phases.find(item => item.isLastPhase);
             return phase;
         },
@@ -176,7 +176,7 @@ app.component('opportunity-subscription', {
                 } else {
                     return 'closed';
                 }
-            }
+            }     
         },
         async subscribe() {
             const messages = useMessages();
@@ -213,7 +213,7 @@ app.component('opportunity-subscription', {
             try {
                 await registration.save().then(res => {
                     window.location.href = registration.editUrl;
-                });
+                });    
             } catch (error) {
                 if (error.error) {
                     for (let key in error.data) {

@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @var MapasCulturais\App $app
  * @var MapasCulturais\Themes\BaseV2\Theme $this
@@ -24,7 +23,7 @@ $this->import('
                 <form class="panel-evaluations__filter form" @submit="entities.refresh(); $event.preventDefault();">
                     <?php $this->applyComponentHook('tabs-openEvaluations-filter', 'begin'); ?>
                     <div class="search">
-                        <input type="text" v-model="entities.query['@keyword']" class="input" @input="entities.refresh();" placeholder="<?= i::esc_attr__("Pesquisar") ?>" />
+                        <input type="text" v-model="entities.query['@keyword']" class="input" @input="entities.refresh();" placeholder="<?= i::esc_attr__("Pesquisar") ?>"/>
                         <button class="button button--icon">
                             <mc-icon name="search"></mc-icon>
                         </button>
@@ -38,10 +37,10 @@ $this->import('
                 </form>
             </template>
             <template #default="{entities}">
-                <div class="panel-evaluations__cards">
-                    <?php $this->applyComponentHook('tabs-openEvaluations-cards', 'begin'); ?>
+                <div class="panel-evaluations__cards">                   
+                    <?php $this->applyComponentHook('tabs-openEvaluations-cards', 'begin'); ?>      
 
-                    <evaluation-card v-for="evaluation in entities" :entity="evaluation" buttonLabel="<?= i::esc_attr__('Avaliar') ?>" v-if="evaluation.registrationFrom"></evaluation-card>
+                    <evaluation-card v-for="evaluation in entities" :entity="evaluation" buttonLabel="<?= i::esc_attr__('Avaliar') ?>"></evaluation-card>
 
                     <?php $this->applyComponentHook('tabs-openEvaluations-cards', 'end'); ?>
                 </div>

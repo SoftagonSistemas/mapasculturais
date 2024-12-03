@@ -12,6 +12,7 @@ services:
       - ./docker-data/saas-files:/var/www/var/saas-files
       - ./docker-data/sessions:/var/www/var/sessions
       - ./docker-data/logs:/var/www/var/logs
+      - ./custom/modules/Opportunities:/var/www/src/modules/Opportunities/
     links:
       - db
     ports:
