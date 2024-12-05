@@ -123,7 +123,7 @@ $config = $app->config['social-media'];
                 <span class="mapas"> <mc-icon name="map"></mc-icon>
                     <a class="link" href="https://github.com/mapasculturais/mapasculturais/releases" target="_blank">Mapas Culturais</a>
                 </span>
-                e instalado por <strong><a class="link" href="https://governo.app" target="_blank">governo.app<span style="color: red">/</span></a></strong>
+                e instalado por <strong><a class="link" href="https://governo.app" target="_blank">hacklab<span style="color: red">/</span></a></strong>
             </p>
 
             <a class="link" href="https://github.com/mapasculturais">
