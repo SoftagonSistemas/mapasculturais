@@ -572,28 +572,6 @@ class Module extends \MapasCulturais\Module
                 }
             }
         });
-        $app->hook("GET(opportunity.updateSumaryEvaluation)", function () use ($app) {
-            $app = App::i();
-
-            $this->requireAuthentication();
-
-            $entity = $this->requestedEntity;
-
-            if (!$entity) {
-                $app->pass();
-            }
-
-            $entity->checkPermission('@control');
-
-            $em = $entity->evaluationMethodConfiguration;
-
-            if ($valuers = $entity->getEvaluationCommittee(true)) {
-                foreach ($valuers as $relation) {
-                    $em->getUserRelation($relation->agent->user)->updateSummary(flush: true);
-                    $app->log->debug("Atualiza resumo das avaliações do usuario {$relation->agent->user->id}");
-                }
-            }
-        });
     }
 
     function register()
